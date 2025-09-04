@@ -11,6 +11,7 @@ const championshipPoints = [25, 18, 15, 12, 10, 8, 6, 4, 2, 1];
 const RacePrediction = () => {
   const { drivers, loading } = useDrivers();
   const [predictions, setPredictions] = useState<string[]>([]);
+  const [fastestLapPrediction, setFastestLapPrediction] = useState<string>('');
   const [availableDrivers, setAvailableDrivers] = useState<string[]>([]);
 
   // Update available drivers when drivers data loads
@@ -36,12 +37,17 @@ const RacePrediction = () => {
   const getDriverById = (id: string) => drivers.find(d => d.id === id);
 
   const getPotentialPoints = () => {
-    return predictions.reduce((total, driverId, index) => {
+    const finishingPoints = predictions.reduce((total, driverId, index) => {
       if (index < 10) {
         return total + (championshipPoints[index] || 0);
       }
       return total;
     }, 0);
+    
+    // Add fastest lap bonus
+    const fastestLapBonus = fastestLapPrediction ? 10 : 0;
+    
+    return finishingPoints + fastestLapBonus;
   };
 
   const getTrendIcon = (points: number) => {
@@ -148,6 +154,42 @@ const RacePrediction = () => {
                   })
                 )}
               </div>
+              
+              {/* Fastest Lap Prediction */}
+              <div className="mt-6">
+                <div className="flex items-center gap-2 mb-4">
+                  <Zap className="h-5 w-5 text-accent" />
+                  <h4 className="text-lg font-bold">Fastest Lap Prediction</h4>
+                  <Badge variant="outline" className="bg-accent/20 text-accent">+10 pts</Badge>
+                </div>
+                
+                {fastestLapPrediction ? (
+                  <Card className="p-3 border-2 border-accent/30 bg-accent/10">
+                    <div className="flex items-center justify-between">
+                      <div className="flex items-center gap-3">
+                        <div className="w-8 h-8 bg-accent rounded-full flex items-center justify-center text-accent-foreground">
+                          <Zap className="h-4 w-4" />
+                        </div>
+                        <div>
+                          <div className="font-semibold">{getDriverById(fastestLapPrediction)?.name}</div>
+                          <div className="text-xs text-muted-foreground">Fastest Lap Prediction</div>
+                        </div>
+                      </div>
+                      <button
+                        onClick={() => setFastestLapPrediction('')}
+                        className="text-destructive hover:text-destructive/80 text-sm"
+                      >
+                        ✕
+                      </button>
+                    </div>
+                  </Card>
+                ) : (
+                  <Card className="p-4 text-center border-2 border-dashed border-muted-foreground/30">
+                    <Zap className="h-6 w-6 text-muted-foreground mx-auto mb-2" />
+                    <p className="text-sm text-muted-foreground">Click a driver below to predict fastest lap</p>
+                  </Card>
+                )}
+              </div>
             </div>
 
             {/* Available Drivers */}
@@ -167,29 +209,44 @@ const RacePrediction = () => {
                   if (!driver) return null;
                   
                   return (
-                    <Card 
-                      key={driver.id}
-                      className="p-3 cursor-pointer racing-transition border-2 border-border hover:border-accent/50 hover:bg-accent/5"
-                      onClick={() => addToPrediction(driver.id)}
-                    >
-                      <div className="flex items-center justify-between">
-                        <div className="flex items-center gap-3">
-                          <div className="w-10 h-10 bg-gradient-to-br from-accent/20 to-primary/20 rounded-lg flex items-center justify-center">
-                            <Crown className="h-5 w-5 text-accent" />
-                          </div>
-                          <div>
-                             <div className="font-semibold flex items-center gap-2">
-                               {driver.name}
-                               {getTrendIcon(driver.championship_points)}
-                             </div>
-                             <div className="text-sm text-muted-foreground">{driver.team.name}</div>
-                          </div>
-                        </div>
-                        
-                         <div className="text-right">
-                           <div className="text-sm text-muted-foreground">Season</div>
-                           <div className="text-sm font-medium text-accent">{driver.championship_points} pts</div>
+                     <Card 
+                       key={driver.id}
+                       className="p-3 cursor-pointer racing-transition border-2 border-border hover:border-accent/50 hover:bg-accent/5 group"
+                       onClick={() => addToPrediction(driver.id)}
+                     >
+                       <div className="flex items-center justify-between">
+                         <div className="flex items-center gap-3">
+                           <div className="w-10 h-10 bg-gradient-to-br from-accent/20 to-primary/20 rounded-lg flex items-center justify-center">
+                             <Crown className="h-5 w-5 text-accent" />
+                           </div>
+                           <div>
+                              <div className="font-semibold flex items-center gap-2">
+                                {driver.name}
+                                {getTrendIcon(driver.championship_points)}
+                              </div>
+                              <div className="text-sm text-muted-foreground">{driver.team.name}</div>
+                           </div>
                          </div>
+                         
+                          <div className="flex items-center gap-3">
+                            <div className="text-right">
+                              <div className="text-sm text-muted-foreground">Season</div>
+                              <div className="text-sm font-medium text-accent">{driver.championship_points} pts</div>
+                            </div>
+                            
+                            {!fastestLapPrediction && (
+                              <button
+                                onClick={(e) => {
+                                  e.stopPropagation();
+                                  setFastestLapPrediction(driver.id);
+                                }}
+                                className="opacity-0 group-hover:opacity-100 transition-opacity bg-accent/20 hover:bg-accent/30 rounded p-1"
+                                title="Predict fastest lap"
+                              >
+                                <Zap className="h-4 w-4 text-accent" />
+                              </button>
+                            )}
+                          </div>
                       </div>
                     </Card>
                   );
