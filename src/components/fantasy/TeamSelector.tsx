@@ -20,17 +20,22 @@ const RacePrediction = () => {
 
   // Update available drivers when drivers data loads
   React.useEffect(() => {
+    console.log('🔄 Effect running, drivers.length:', drivers.length);
     if (drivers.length > 0) {
       // Load saved predictions from localStorage
       const savedPredictions = localStorage.getItem('f1-predictions');
       const savedFastestLap = localStorage.getItem('f1-fastest-lap');
       
+      console.log('💾 localStorage data:', { savedPredictions, savedFastestLap });
+      
       if (savedPredictions) {
         const parsedPredictions = JSON.parse(savedPredictions);
+        console.log('📋 Parsed predictions:', parsedPredictions);
         // Validate that all saved driver IDs still exist
         const validPredictions = parsedPredictions.filter((id: string) => 
           drivers.some(driver => driver.id === id)
         );
+        console.log('✅ Valid predictions:', validPredictions);
         setPredictions(validPredictions);
         
         // Set available drivers (excluding those in predictions)
@@ -39,10 +44,12 @@ const RacePrediction = () => {
           .filter(id => !validPredictions.includes(id));
         setAvailableDrivers(remainingDrivers);
       } else {
+        console.log('❌ No saved predictions found');
         setAvailableDrivers(drivers.map(d => d.id));
       }
       
       if (savedFastestLap && drivers.some(driver => driver.id === savedFastestLap)) {
+        console.log('⚡ Setting fastest lap:', savedFastestLap);
         setFastestLapPrediction(savedFastestLap);
       }
     }
