@@ -1,4 +1,5 @@
 import React from 'react';
+import { useNavigate } from 'react-router-dom';
 import { Card } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { RacingButton } from '@/components/ui/racing-button';
@@ -8,6 +9,7 @@ import { format } from 'date-fns';
 
 const RaceCalendar = () => {
   const { races, loading } = useRaces();
+  const navigate = useNavigate();
 
   const getStatusBadge = (race: any) => {
     switch (race.status) {
@@ -141,7 +143,7 @@ const RaceCalendar = () => {
                         variant="ghost" 
                         size="sm"
                         onClick={() => {
-                          alert(`Race Results for ${race.name}:\n\nWinner: ${race.winner || 'TBD'}\n\nFull results coming soon!`);
+                          navigate(`/race-results/${race.id}`);
                         }}
                       >
                         View Results
