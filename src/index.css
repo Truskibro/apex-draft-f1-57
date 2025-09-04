@@ -1,0 +1,185 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/* F1 Fantasy League Design System - Racing-inspired dark theme
+All colors MUST be HSL for proper theming.
+*/
+
+@layer base {
+  :root {
+    /* F1 Racing Dark Theme */
+    --background: 220 20% 8%;
+    --foreground: 210 20% 95%;
+
+    --card: 220 25% 12%;
+    --card-foreground: 210 20% 95%;
+
+    --popover: 220 25% 12%;
+    --popover-foreground: 210 20% 95%;
+
+    /* F1 Racing Red Primary */
+    --primary: 0 85% 55%;
+    --primary-foreground: 210 20% 95%;
+
+    /* Metallic Silver Secondary */
+    --secondary: 210 15% 25%;
+    --secondary-foreground: 210 20% 95%;
+
+    --muted: 220 15% 18%;
+    --muted-foreground: 210 10% 65%;
+
+    /* Neon Green Accent */
+    --accent: 120 65% 50%;
+    --accent-foreground: 220 20% 8%;
+
+    --destructive: 0 75% 55%;
+    --destructive-foreground: 210 20% 95%;
+
+    --border: 220 20% 20%;
+    --input: 220 20% 15%;
+    --ring: 0 85% 55%;
+
+    /* F1-inspired gradients */
+    --gradient-racing: linear-gradient(135deg, hsl(0 85% 55%), hsl(15 85% 50%));
+    --gradient-metallic: linear-gradient(135deg, hsl(210 15% 35%), hsl(210 15% 20%));
+    --gradient-neon: linear-gradient(135deg, hsl(120 65% 50%), hsl(140 65% 45%));
+    --gradient-dark: linear-gradient(135deg, hsl(220 25% 12%), hsl(220 30% 8%));
+
+    /* Racing shadows */
+    --shadow-racing: 0 8px 32px hsl(0 85% 55% / 0.3);
+    --shadow-metallic: 0 8px 24px hsl(210 15% 15% / 0.4);
+    --shadow-neon: 0 6px 20px hsl(120 65% 50% / 0.4);
+
+    /* Smooth racing transitions */
+    --transition-racing: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+
+    --radius: 0.75rem;
+
+    --sidebar-background: 0 0% 98%;
+
+    --sidebar-foreground: 240 5.3% 26.1%;
+
+    --sidebar-primary: 240 5.9% 10%;
+
+    --sidebar-primary-foreground: 0 0% 98%;
+
+    --sidebar-accent: 240 4.8% 95.9%;
+
+    --sidebar-accent-foreground: 240 5.9% 10%;
+
+    --sidebar-border: 220 13% 91%;
+
+    --sidebar-ring: 217.2 91.2% 59.8%;
+  }
+
+  /* Light mode (if needed) - keeping F1 theme consistent */
+  .light {
+    --background: 210 20% 95%;
+    --foreground: 220 20% 10%;
+    --card: 210 20% 98%;
+    --card-foreground: 220 20% 10%;
+    --primary: 0 85% 55%;
+    --secondary: 210 15% 85%;
+    --muted: 210 15% 90%;
+    --accent: 120 65% 45%;
+    --border: 210 20% 80%;
+    --input: 210 20% 85%;
+    
+    /* Sidebar tokens for compatibility */
+    --sidebar-background: 210 20% 98%;
+    --sidebar-foreground: 220 20% 10%;
+    --sidebar-primary: 0 85% 55%;
+    --sidebar-primary-foreground: 210 20% 95%;
+    --sidebar-accent: 210 15% 90%;
+    --sidebar-accent-foreground: 220 20% 10%;
+    --sidebar-border: 210 20% 80%;
+    --sidebar-ring: 0 85% 55%;
+  }
+}
+
+@layer base {
+  * {
+    @apply border-border;
+  }
+
+  body {
+    @apply bg-background text-foreground antialiased;
+    font-feature-settings: "rlig" 1, "calt" 1;
+  }
+
+  /* F1 Racing themed scroll bars */
+  ::-webkit-scrollbar {
+    width: 8px;
+    height: 8px;
+  }
+
+  ::-webkit-scrollbar-track {
+    @apply bg-muted;
+  }
+
+  ::-webkit-scrollbar-thumb {
+    @apply bg-border rounded-full;
+  }
+
+  ::-webkit-scrollbar-thumb:hover {
+    @apply bg-primary/50;
+  }
+}
+
+@layer components {
+  /* F1 Racing component utilities */
+  .racing-gradient {
+    background: var(--gradient-racing);
+  }
+
+  .metallic-gradient {
+    background: var(--gradient-metallic);
+  }
+
+  .neon-gradient {
+    background: var(--gradient-neon);
+  }
+
+  .dark-gradient {
+    background: var(--gradient-dark);
+  }
+
+  .racing-shadow {
+    box-shadow: var(--shadow-racing);
+  }
+
+  .metallic-shadow {
+    box-shadow: var(--shadow-metallic);
+  }
+
+  .neon-shadow {
+    box-shadow: var(--shadow-neon);
+  }
+
+  .racing-transition {
+    transition: var(--transition-racing);
+  }
+
+  /* Racing-inspired animations */
+  @keyframes speed-blur {
+    0% { transform: translateX(-100%) scaleX(0.8); opacity: 0; }
+    50% { transform: translateX(-10%) scaleX(1.1); opacity: 0.8; }
+    100% { transform: translateX(0) scaleX(1); opacity: 1; }
+  }
+
+  @keyframes pit-stop {
+    0% { transform: scale(1) rotate(0deg); }
+    25% { transform: scale(0.95) rotate(-2deg); }
+    75% { transform: scale(1.05) rotate(2deg); }
+    100% { transform: scale(1) rotate(0deg); }
+  }
+
+  .speed-enter {
+    animation: speed-blur 0.6s cubic-bezier(0.4, 0, 0.2, 1);
+  }
+
+  .pit-stop-hover:hover {
+    animation: pit-stop 0.4s ease-in-out;
+  }
+}
