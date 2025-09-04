@@ -186,7 +186,7 @@ const Leaderboard = () => {
             <div>
               <div className="text-center mb-8">
                 <div className="flex items-center justify-center gap-2 mb-4">
-                  <Users className="h-6 w-6 text-accent" />
+                  <Users className="h-6 w-6 text-green-500" />
                   <h3 className="text-2xl font-bold">Team Leaderboard</h3>
                 </div>
               </div>
@@ -197,18 +197,18 @@ const Leaderboard = () => {
                   {leagueStandings.slice(0, 3).map((team, index) => {
                   const positions = ['order-2', 'order-1', 'order-3'];
                   const heights = ['h-24', 'h-32', 'h-20'];
-                  return <Card key={team.teamName} className={`${positions[index]} p-4 text-center border-2 ${team.rank === 1 ? 'border-primary racing-shadow' : 'border-border'}`}>
+                  return <Card key={team.teamName} className={`${positions[index]} p-4 text-center border-2 ${team.rank === 1 ? 'border-green-500 racing-shadow' : 'border-border'}`}>
                         <div className={`${heights[index]} flex flex-col items-center justify-end mb-3`}>
                           <div className="mb-1">{getRankIcon(team.rank)}</div>
-                          <div className="w-12 h-12 bg-gradient-to-br from-primary/20 to-accent/20 rounded-full flex items-center justify-center border-2 border-primary">
-                            <Users className="h-6 w-6 text-primary" />
+                          <div className="w-12 h-12 bg-gradient-to-br from-green-500/20 to-emerald-500/20 rounded-full flex items-center justify-center border-2 border-green-500">
+                            <Users className="h-6 w-6 text-green-500" />
                           </div>
                         </div>
                         
                         <h4 className="font-bold text-sm mb-1">
                           {team.teamName}
                         </h4>
-                        <div className="text-lg font-bold text-primary">{team.totalPoints}</div>
+                        <div className="text-lg font-bold text-green-500">{team.totalPoints}</div>
                         <div className="text-xs text-muted-foreground">pts</div>
                       </Card>;
                 })}
@@ -225,8 +225,8 @@ const Leaderboard = () => {
                           {team.rank <= 3 && getRankIcon(team.rank)}
                         </div>
                         
-                        <div className="w-6 h-6 bg-gradient-to-br from-primary/20 to-accent/20 rounded-full flex items-center justify-center">
-                          <Users className="h-3 w-3 text-primary" />
+                        <div className="w-6 h-6 bg-gradient-to-br from-green-500/20 to-emerald-500/20 rounded-full flex items-center justify-center">
+                          <Users className="h-3 w-3 text-green-500" />
                         </div>
                         
                         <div>
@@ -242,7 +242,7 @@ const Leaderboard = () => {
                       <div className="flex items-center gap-3 text-right">
                         <div>
                           <div className="text-xs text-muted-foreground">Avg</div>
-                          <div className="text-sm font-medium text-primary">{Math.round(team.totalPoints / team.playerCount)}</div>
+                          <div className="text-sm font-medium text-green-500">{Math.round(team.totalPoints / team.playerCount)}</div>
                         </div>
                         
                         <div>
