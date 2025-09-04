@@ -1,14 +1,12 @@
-import React, { useState } from 'react';
+import React from 'react';
 import { Card } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Avatar, AvatarFallback } from '@/components/ui/avatar';
-import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Crown, Medal, Trophy, TrendingUp, Star, Loader2, Users, User } from 'lucide-react';
 import { useStandings } from '@/hooks/useStandings';
 
 const Leaderboard = () => {
   const { standings, loading } = useStandings();
-  const [activeTab, setActiveTab] = useState("individual");
 
   const getRankIcon = (rank: number) => {
     switch (rank) {
@@ -97,7 +95,7 @@ const Leaderboard = () => {
   return (
     <section className="py-16 bg-muted/20">
       <div className="container px-4">
-        <div className="max-w-4xl mx-auto">
+        <div className="max-w-6xl mx-auto">
           <div className="text-center mb-12">
             <div className="flex items-center justify-center gap-2 mb-4">
               <Trophy className="h-8 w-8 text-primary" />
@@ -108,22 +106,13 @@ const Leaderboard = () => {
             </p>
           </div>
 
-          <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
-            <TabsList className="grid w-full grid-cols-2 mb-8">
-              <TabsTrigger value="individual" className="flex items-center gap-2">
-                <User className="h-4 w-4" />
-                Individual Standings
-              </TabsTrigger>
-              <TabsTrigger value="league" className="flex items-center gap-2">
-                <Users className="h-4 w-4" />
-                League Standings
-              </TabsTrigger>
-            </TabsList>
-
-            <TabsContent value="individual">{/* Individual standings content will go here */}
-
-          {/* Top 3 Podium */}
-          <div className="grid md:grid-cols-3 gap-4 mb-8">
+          {/* Top 3 Individual Podium */}
+          <div className="mb-12">
+            <h3 className="text-2xl font-bold text-center mb-6 flex items-center justify-center gap-2">
+              <User className="h-6 w-6 text-primary" />
+              Top Individual Players
+            </h3>
+            <div className="grid md:grid-cols-3 gap-4">
               {standings.slice(0, 3).map((player, index) => {
                 const positions = ['md:order-2', 'md:order-1', 'md:order-3'];
                 const heights = ['h-32', 'h-40', 'h-24'];
@@ -156,161 +145,123 @@ const Leaderboard = () => {
                 );
               })}
             </div>
+          </div>
 
-            {/* Full Individual Leaderboard */}
-            <Card className="border-2">
-              <div className="p-6 border-b border-border">
-                <h3 className="text-xl font-bold flex items-center gap-2">
-                  <Star className="h-5 w-5 text-accent" />
-                  Individual Rankings
-                </h3>
-              </div>
+          {/* Side by Side Standings */}
+          <div className="grid lg:grid-cols-2 gap-8">
+            {/* Individual Standings */}
+            <div>
+              <h3 className="text-xl font-bold flex items-center gap-2 mb-4">
+                <User className="h-5 w-5 text-primary" />
+                Individual Rankings
+              </h3>
               
-              <div className="divide-y divide-border">
-                {standings.map((player) => (
-                  <div 
-                    key={player.id} 
-                    className={`p-4 flex items-center justify-between hover:bg-muted/50 racing-transition ${
-                      player.isCurrentUser ? 'bg-primary/10 border-l-4 border-l-primary' : ''
-                    }`}
-                  >
-                    <div className="flex items-center gap-4">
-                      <div className="flex items-center gap-2 w-16">
-                        <span className="text-2xl font-bold text-muted-foreground">#{player.rank}</span>
-                        {getRankIcon(player.rank)}
-                      </div>
-                      
-                      <Avatar className="w-10 h-10">
-                        <AvatarFallback className={player.isCurrentUser ? 'bg-primary/20 text-primary' : ''}>
-                          {getInitials(player.profile?.display_name)}
-                        </AvatarFallback>
-                      </Avatar>
-                      
-                      <div>
-                        <div className="font-semibold flex items-center gap-2">
-                          {player.profile?.display_name || 'Anonymous'}
-                          {player.isCurrentUser && <Badge variant="secondary">You</Badge>}
+              <Card className="border-2 max-h-[600px] overflow-y-auto">
+                <div className="divide-y divide-border">
+                  {standings.map((player) => (
+                    <div 
+                      key={player.id} 
+                      className={`p-4 flex items-center justify-between hover:bg-muted/50 racing-transition ${
+                        player.isCurrentUser ? 'bg-primary/10 border-l-4 border-l-primary' : ''
+                      }`}
+                    >
+                      <div className="flex items-center gap-3">
+                        <div className="flex items-center gap-1 w-12">
+                          <span className="text-lg font-bold text-muted-foreground">#{player.rank}</span>
+                          {player.rank <= 3 && getRankIcon(player.rank)}
                         </div>
-                        <div className="text-sm text-muted-foreground">
-                          {player.profile?.team_name || 'No Team'}
+                        
+                        <Avatar className="w-8 h-8">
+                          <AvatarFallback className={`text-xs ${player.isCurrentUser ? 'bg-primary/20 text-primary' : ''}`}>
+                            {getInitials(player.profile?.display_name)}
+                          </AvatarFallback>
+                        </Avatar>
+                        
+                        <div>
+                          <div className="font-semibold text-sm flex items-center gap-2">
+                            {player.profile?.display_name || 'Anonymous'}
+                            {player.isCurrentUser && <Badge variant="secondary" className="text-xs">You</Badge>}
+                          </div>
+                          <div className="text-xs text-muted-foreground">
+                            {player.profile?.team_name || 'No Team'}
+                          </div>
+                        </div>
+                      </div>
+                      
+                      <div className="flex items-center gap-4 text-right">
+                        <div>
+                          <div className="text-xs text-muted-foreground">Total</div>
+                          <div className="text-sm font-bold">{player.total_points}</div>
+                        </div>
+                        
+                        <div className="flex items-center gap-1 w-8">
+                          {getTrendIcon(player.rank, player.previous_rank)}
+                          <span className={`text-xs font-medium ${
+                            player.rank < (player.previous_rank || player.rank) ? 'text-accent' : 
+                            player.rank > (player.previous_rank || player.rank) ? 'text-destructive' : 
+                            'text-muted-foreground'
+                          }`}>
+                            {getTrendChange(player.rank, player.previous_rank)}
+                          </span>
                         </div>
                       </div>
                     </div>
-                    
-                    <div className="flex items-center gap-6 text-right">
-                      <div>
-                        <div className="text-sm text-muted-foreground">This Week</div>
-                        <div className="font-medium text-accent">+{player.weekly_points}</div>
-                      </div>
-                      
-                      <div>
-                        <div className="text-sm text-muted-foreground">Total Points</div>
-                        <div className="text-lg font-bold">{player.total_points}</div>
-                      </div>
-                      
-                      <div className="flex items-center gap-1 w-12">
-                        {getTrendIcon(player.rank, player.previous_rank)}
-                        <span className={`text-sm font-medium ${
-                          player.rank < (player.previous_rank || player.rank) ? 'text-accent' : 
-                          player.rank > (player.previous_rank || player.rank) ? 'text-destructive' : 
-                          'text-muted-foreground'
-                        }`}>
-                          {getTrendChange(player.rank, player.previous_rank)}
-                        </span>
-                      </div>
-                    </div>
-                  </div>
-                ))}
-              </div>
-            </Card>
-            </TabsContent>
-
-            <TabsContent value="league">
-            {/* Top 3 Team Podium */}
-            <div className="grid md:grid-cols-3 gap-4 mb-8">
-              {leagueStandings.slice(0, 3).map((team, index) => {
-                const positions = ['md:order-2', 'md:order-1', 'md:order-3'];
-                const heights = ['h-32', 'h-40', 'h-24'];
-                
-                return (
-                  <Card 
-                    key={team.teamName} 
-                    className={`${positions[index]} p-6 text-center border-2 ${
-                      team.rank === 1 ? 'border-primary racing-shadow' : 'border-border'
-                    }`}
-                  >
-                    <div className={`${heights[index]} flex flex-col items-center justify-end mb-4`}>
-                      <div className="mb-2">{getRankIcon(team.rank)}</div>
-                      <div className="w-16 h-16 bg-gradient-to-br from-accent/20 to-primary/20 rounded-full flex items-center justify-center border-2 border-primary">
-                        <Users className="h-8 w-8 text-primary" />
-                      </div>
-                    </div>
-                    
-                    <h3 className="font-bold text-lg mb-1">
-                      {team.teamName}
-                    </h3>
-                    <p className="text-sm text-muted-foreground mb-2">
-                      {team.playerCount} member{team.playerCount !== 1 ? 's' : ''}
-                    </p>
-                    <div className="text-2xl font-bold text-primary">{team.totalPoints}</div>
-                    <div className="text-xs text-muted-foreground">total points</div>
-                  </Card>
-                );
-              })}
+                  ))}
+                </div>
+              </Card>
             </div>
 
-            {/* Full League Standings */}
-            <Card className="border-2">
-              <div className="p-6 border-b border-border">
-                <h3 className="text-xl font-bold flex items-center gap-2">
-                  <Users className="h-5 w-5 text-accent" />
-                  Team Rankings
-                </h3>
-              </div>
+            {/* League Standings */}
+            <div>
+              <h3 className="text-xl font-bold flex items-center gap-2 mb-4">
+                <Users className="h-5 w-5 text-accent" />
+                Team Rankings
+              </h3>
               
-              <div className="divide-y divide-border">
-                {leagueStandings.map((team) => (
-                  <div 
-                    key={team.teamName} 
-                    className="p-4 flex items-center justify-between hover:bg-muted/50 racing-transition"
-                  >
-                    <div className="flex items-center gap-4">
-                      <div className="flex items-center gap-2 w-16">
-                        <span className="text-2xl font-bold text-muted-foreground">#{team.rank}</span>
-                        {getRankIcon(team.rank)}
-                      </div>
-                      
-                      <div className="w-10 h-10 bg-gradient-to-br from-accent/20 to-primary/20 rounded-full flex items-center justify-center">
-                        <Users className="h-5 w-5 text-primary" />
-                      </div>
-                      
-                      <div>
-                        <div className="font-semibold">
-                          {team.teamName}
+              <Card className="border-2 max-h-[600px] overflow-y-auto">
+                <div className="divide-y divide-border">
+                  {leagueStandings.map((team) => (
+                    <div 
+                      key={team.teamName} 
+                      className="p-4 flex items-center justify-between hover:bg-muted/50 racing-transition"
+                    >
+                      <div className="flex items-center gap-3">
+                        <div className="flex items-center gap-1 w-12">
+                          <span className="text-lg font-bold text-muted-foreground">#{team.rank}</span>
+                          {team.rank <= 3 && getRankIcon(team.rank)}
                         </div>
-                        <div className="text-sm text-muted-foreground">
-                          {team.playerCount} member{team.playerCount !== 1 ? 's' : ''}
+                        
+                        <div className="w-8 h-8 bg-gradient-to-br from-accent/20 to-primary/20 rounded-full flex items-center justify-center">
+                          <Users className="h-4 w-4 text-primary" />
+                        </div>
+                        
+                        <div>
+                          <div className="font-semibold text-sm">
+                            {team.teamName}
+                          </div>
+                          <div className="text-xs text-muted-foreground">
+                            {team.playerCount} member{team.playerCount !== 1 ? 's' : ''}
+                          </div>
+                        </div>
+                      </div>
+                      
+                      <div className="flex items-center gap-4 text-right">
+                        <div>
+                          <div className="text-xs text-muted-foreground">Avg</div>
+                          <div className="text-sm font-medium text-accent">{Math.round(team.totalPoints / team.playerCount)}</div>
+                        </div>
+                        
+                        <div>
+                          <div className="text-xs text-muted-foreground">Total</div>
+                          <div className="text-sm font-bold">{team.totalPoints}</div>
                         </div>
                       </div>
                     </div>
-                    
-                    <div className="flex items-center gap-6 text-right">
-                      <div>
-                        <div className="text-sm text-muted-foreground">Avg Points</div>
-                        <div className="font-medium text-accent">{Math.round(team.totalPoints / team.playerCount)}</div>
-                      </div>
-                      
-                      <div>
-                        <div className="text-sm text-muted-foreground">Total Points</div>
-                        <div className="text-lg font-bold">{team.totalPoints}</div>
-                      </div>
-                    </div>
-                  </div>
-                ))}
-              </div>
-            </Card>
-            </TabsContent>
-          </Tabs>
+                  ))}
+                </div>
+              </Card>
+            </div>
+          </div>
         </div>
       </div>
     </section>
