@@ -299,7 +299,10 @@ const RacePrediction = () => {
                         </div>
                       </div>
                       <button
-                        onClick={() => setFastestLapPrediction('')}
+                        onClick={() => {
+                          setFastestLapPrediction('');
+                          setIsSaved(false);
+                        }}
                         className="text-destructive hover:text-destructive/80 text-sm"
                       >
                         ✕
@@ -362,6 +365,7 @@ const RacePrediction = () => {
                                 onClick={(e) => {
                                   e.stopPropagation();
                                   setFastestLapPrediction(driver.id);
+                                  setIsSaved(false);
                                 }}
                                 className="opacity-0 group-hover:opacity-100 transition-opacity bg-accent/20 hover:bg-accent/30 rounded p-1"
                                 title="Predict fastest lap"
