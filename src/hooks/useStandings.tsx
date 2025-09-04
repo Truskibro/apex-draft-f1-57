@@ -29,6 +29,8 @@ export const useStandings = () => {
 
   const fetchStandings = async () => {
     try {
+      console.log('🔍 Fetching standings...');
+      
       const { data, error } = await supabase
         .from('user_standings')
         .select(`
@@ -39,6 +41,7 @@ export const useStandings = () => {
         .limit(10);
 
       if (error) {
+        console.log('❌ Supabase error:', error);
         toast({
           title: 'Error fetching standings',
           description: error.message,
@@ -47,10 +50,13 @@ export const useStandings = () => {
         return;
       }
 
+      console.log('📊 Raw supabase data:', data);
+
       // Add sample data if no real data exists
       let standingsData = data || [];
       
       if (standingsData.length === 0) {
+        console.log('📝 Creating sample data...');
         standingsData = [
           {
             id: '1',
@@ -96,9 +102,38 @@ export const useStandings = () => {
             rank: 5,
             previous_rank: 8,
             profiles: { team_name: 'Racing Rebels', display_name: 'You' }
+          },
+          {
+            id: '6',
+            user_id: 'sample6',
+            total_points: 987,
+            weekly_points: 58,
+            rank: 6,
+            previous_rank: 6,
+            profiles: { team_name: 'Speed Demons', display_name: 'James Bond' }
+          },
+          {
+            id: '7',
+            user_id: 'sample7',
+            total_points: 934,
+            weekly_points: 63,
+            rank: 7,
+            previous_rank: 9,
+            profiles: { team_name: 'Apex Hunters', display_name: 'Lara Croft' }
+          },
+          {
+            id: '8',
+            user_id: 'sample8',
+            total_points: 876,
+            weekly_points: 45,
+            rank: 8,
+            previous_rank: 7,
+            profiles: { team_name: 'Grid Legends', display_name: 'Tony Stark' }
           }
         ] as any[];
       }
+
+      console.log('📋 Processing standings data:', standingsData);
 
       // Mark current user
       const standingsWithUser = standingsData.map((standing: any) => ({
@@ -107,8 +142,10 @@ export const useStandings = () => {
         isCurrentUser: standing.user_id === user?.id
       }));
 
+      console.log('✅ Final standings:', standingsWithUser);
       setStandings(standingsWithUser);
     } catch (error) {
+      console.log('❌ Catch error:', error);
       toast({
         title: 'Error',
         description: 'Failed to load standings',
