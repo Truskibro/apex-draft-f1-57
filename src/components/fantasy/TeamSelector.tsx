@@ -159,15 +159,18 @@ const RacePrediction = () => {
               </div>
               
               <div className="space-y-3 max-h-[600px] overflow-y-auto">
-                {availableDrivers.map((driverId) => {
-                  const driver = getDriverById(driverId);
+                {availableDrivers
+                  .map(driverId => getDriverById(driverId))
+                  .filter(driver => driver !== undefined)
+                  .sort((a, b) => (b?.championship_points || 0) - (a?.championship_points || 0))
+                  .map((driver) => {
                   if (!driver) return null;
                   
                   return (
                     <Card 
-                      key={driverId}
+                      key={driver.id}
                       className="p-3 cursor-pointer racing-transition border-2 border-border hover:border-accent/50 hover:bg-accent/5"
-                      onClick={() => addToPrediction(driverId)}
+                      onClick={() => addToPrediction(driver.id)}
                     >
                       <div className="flex items-center justify-between">
                         <div className="flex items-center gap-3">
