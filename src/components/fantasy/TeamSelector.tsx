@@ -2,7 +2,7 @@ import React, { useState } from 'react';
 import { Card } from '@/components/ui/card';
 import { RacingButton } from '@/components/ui/racing-button';
 import { Badge } from '@/components/ui/badge';
-import { Crown, Trophy, TrendingUp, Zap, Target, Loader2, ArrowUp, ArrowDown } from 'lucide-react';
+import { Crown, Trophy, TrendingUp, Zap, Target, Loader2, GripVertical } from 'lucide-react';
 import { useDrivers } from '@/hooks/useDrivers';
 
 // F1 Championship scoring system
@@ -13,6 +13,7 @@ const RacePrediction = () => {
   const [predictions, setPredictions] = useState<string[]>([]);
   const [fastestLapPrediction, setFastestLapPrediction] = useState<string>('');
   const [availableDrivers, setAvailableDrivers] = useState<string[]>([]);
+  const [draggedIndex, setDraggedIndex] = useState<number | null>(null);
 
   // Update available drivers when drivers data loads
   React.useEffect(() => {
@@ -44,6 +45,24 @@ const RacePrediction = () => {
     const [movedDriver] = newPredictions.splice(fromIndex, 1);
     newPredictions.splice(toIndex, 0, movedDriver);
     setPredictions(newPredictions);
+  };
+
+  const handleDragStart = (e: React.DragEvent, index: number) => {
+    setDraggedIndex(index);
+    e.dataTransfer.effectAllowed = 'move';
+  };
+
+  const handleDragOver = (e: React.DragEvent) => {
+    e.preventDefault();
+    e.dataTransfer.dropEffect = 'move';
+  };
+
+  const handleDrop = (e: React.DragEvent, dropIndex: number) => {
+    e.preventDefault();
+    if (draggedIndex !== null && draggedIndex !== dropIndex) {
+      movePrediction(draggedIndex, dropIndex);
+    }
+    setDraggedIndex(null);
   };
 
   const getDriverById = (id: string) => drivers.find(d => d.id === id);
@@ -136,13 +155,22 @@ const RacePrediction = () => {
                     return (
                       <Card 
                         key={`${driverId}-${index}`}
-                        className="p-3 border-2 border-primary/20 bg-primary/5 hover:bg-primary/10 racing-transition group"
+                        className={`p-3 border-2 border-primary/20 bg-primary/5 hover:bg-primary/10 racing-transition group cursor-grab active:cursor-grabbing ${
+                          draggedIndex === index ? 'opacity-50 scale-105' : ''
+                        }`}
+                        draggable
+                        onDragStart={(e) => handleDragStart(e, index)}
+                        onDragOver={handleDragOver}
+                        onDrop={(e) => handleDrop(e, index)}
                       >
                         <div className="flex items-center justify-between">
                           <div className="flex items-center gap-3">
                             <div className="w-8 h-8 bg-primary rounded-full flex items-center justify-center text-primary-foreground font-bold text-sm">
                               {index + 1}
                             </div>
+                            
+                            <GripVertical className="h-4 w-4 text-muted-foreground/50 group-hover:text-muted-foreground transition-colors" />
+                            
                              <div>
                                <div className="font-semibold flex items-center gap-2">
                                  {driver.name}
@@ -155,28 +183,6 @@ const RacePrediction = () => {
                           </div>
                           
                           <div className="flex items-center gap-2">
-                            {/* Reorder buttons */}
-                            <div className="flex flex-col opacity-0 group-hover:opacity-100 transition-opacity">
-                              {index > 0 && (
-                                <button
-                                  onClick={() => movePrediction(index, index - 1)}
-                                  className="text-muted-foreground hover:text-primary text-xs p-1"
-                                  title="Move up"
-                                >
-                                  <ArrowUp className="h-3 w-3" />
-                                </button>
-                              )}
-                              {index < predictions.length - 1 && (
-                                <button
-                                  onClick={() => movePrediction(index, index + 1)}
-                                  className="text-muted-foreground hover:text-primary text-xs p-1"
-                                  title="Move down"
-                                >
-                                  <ArrowDown className="h-3 w-3" />
-                                </button>
-                              )}
-                            </div>
-
                             {/* Fastest lap button */}
                             {fastestLapPrediction !== driverId && (
                               <button
