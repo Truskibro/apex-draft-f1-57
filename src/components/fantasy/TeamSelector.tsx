@@ -55,23 +55,6 @@ const RacePrediction = () => {
     }
   }, [drivers]);
 
-  // Save predictions to localStorage whenever they change
-  React.useEffect(() => {
-    if (predictions.length > 0) {
-      localStorage.setItem('f1-predictions', JSON.stringify(predictions));
-    } else {
-      localStorage.removeItem('f1-predictions');
-    }
-  }, [predictions]);
-
-  // Save fastest lap prediction to localStorage whenever it changes
-  React.useEffect(() => {
-    if (fastestLapPrediction) {
-      localStorage.setItem('f1-fastest-lap', fastestLapPrediction);
-    } else {
-      localStorage.removeItem('f1-fastest-lap');
-    }
-  }, [fastestLapPrediction]);
 
   const addToPrediction = (driverId: string) => {
     if (predictions.length < 10 && availableDrivers.includes(driverId)) {
@@ -102,11 +85,18 @@ const RacePrediction = () => {
   };
 
   const handleSavePredictions = () => {
+    console.log('💾 Saving predictions:', predictions);
+    console.log('⚡ Saving fastest lap:', fastestLapPrediction);
+    
     // Force save to localStorage
     localStorage.setItem('f1-predictions', JSON.stringify(predictions));
     if (fastestLapPrediction) {
       localStorage.setItem('f1-fastest-lap', fastestLapPrediction);
     }
+    
+    // Verify save worked
+    const saved = localStorage.getItem('f1-predictions');
+    console.log('✅ Verified saved data:', saved);
     
     setIsSaved(true);
     toast({
