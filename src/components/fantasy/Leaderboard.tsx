@@ -93,94 +93,90 @@ const Leaderboard = () => {
   const leagueStandings = getLeagueStandings();
 
   return (
-    <>
-      {/* Individual Leaderboard Section */}
-      <section className="py-16 bg-muted/20">
-        <div className="container px-4">
-          <div className="max-w-4xl mx-auto">
-            <div className="text-center mb-12">
-              <div className="flex items-center justify-center gap-2 mb-4">
-                <User className="h-8 w-8 text-primary" />
-                <h2 className="text-4xl font-bold">Individual Leaderboard</h2>
-              </div>
-              <p className="text-xl text-muted-foreground">
-                Top individual players and their race predictions
-              </p>
+    <section className="py-16 bg-muted/20">
+      <div className="container px-4">
+        <div className="max-w-7xl mx-auto">
+          <div className="text-center mb-12">
+            <div className="flex items-center justify-center gap-2 mb-4">
+              <Trophy className="h-8 w-8 text-primary" />
+              <h2 className="text-4xl font-bold">Leaderboards</h2>
             </div>
+            <p className="text-xl text-muted-foreground">
+              Individual players and team standings
+            </p>
+          </div>
 
-            {/* Top 3 Individual Podium */}
-            <div className="mb-12">
-              <h3 className="text-2xl font-bold text-center mb-6 flex items-center justify-center gap-2">
-                <Trophy className="h-6 w-6 text-primary" />
-                Top 3 Players
-              </h3>
-              <div className="grid md:grid-cols-3 gap-4">
-                {standings.slice(0, 3).map((player, index) => {
-                  const positions = ['md:order-2', 'md:order-1', 'md:order-3'];
-                  const heights = ['h-32', 'h-40', 'h-24'];
-                  
-                  return (
-                    <Card 
-                      key={player.id} 
-                      className={`${positions[index]} p-6 text-center border-2 ${
-                        player.rank === 1 ? 'border-primary racing-shadow' : 'border-border'
-                      }`}
-                    >
-                      <div className={`${heights[index]} flex flex-col items-center justify-end mb-4`}>
-                        <div className="mb-2">{getRankIcon(player.rank)}</div>
-                        <Avatar className="w-16 h-16 border-2 border-primary">
-                          <AvatarFallback className="bg-primary/20 text-primary font-bold">
-                            {getInitials(player.profile?.display_name)}
-                          </AvatarFallback>
-                        </Avatar>
-                      </div>
-                      
-                      <h3 className="font-bold text-lg mb-1">
-                        {player.profile?.display_name || 'Anonymous'}
-                      </h3>
-                      <p className="text-sm text-muted-foreground mb-2">
-                        {player.profile?.team_name || 'No Team'}
-                      </p>
-                      <div className="text-2xl font-bold text-primary">{player.total_points}</div>
-                      <div className="text-xs text-muted-foreground">points</div>
-                    </Card>
-                  );
-                })}
-              </div>
-            </div>
-
-            {/* Full Individual Rankings */}
+          {/* Side by Side Leaderboards */}
+          <div className="grid lg:grid-cols-2 gap-8">
+            {/* Individual Leaderboard */}
             <div>
-              <h3 className="text-xl font-bold flex items-center gap-2 mb-4">
-                <Star className="h-5 w-5 text-primary" />
-                All Players
-              </h3>
-              
-              <Card className="border-2 max-h-[600px] overflow-y-auto">
+              <div className="text-center mb-8">
+                <div className="flex items-center justify-center gap-2 mb-4">
+                  <User className="h-6 w-6 text-primary" />
+                  <h3 className="text-2xl font-bold">Individual Leaderboard</h3>
+                </div>
+              </div>
+
+              {/* Top 3 Individual Podium */}
+              <div className="mb-8">
+                <div className="grid grid-cols-3 gap-2">
+                  {standings.slice(0, 3).map((player, index) => {
+                    const positions = ['order-2', 'order-1', 'order-3'];
+                    const heights = ['h-24', 'h-32', 'h-20'];
+                    
+                    return (
+                      <Card 
+                        key={player.id} 
+                        className={`${positions[index]} p-4 text-center border-2 ${
+                          player.rank === 1 ? 'border-primary racing-shadow' : 'border-border'
+                        }`}
+                      >
+                        <div className={`${heights[index]} flex flex-col items-center justify-end mb-3`}>
+                          <div className="mb-1">{getRankIcon(player.rank)}</div>
+                          <Avatar className="w-12 h-12 border-2 border-primary">
+                            <AvatarFallback className="bg-primary/20 text-primary font-bold text-xs">
+                              {getInitials(player.profile?.display_name)}
+                            </AvatarFallback>
+                          </Avatar>
+                        </div>
+                        
+                        <h4 className="font-bold text-sm mb-1">
+                          {player.profile?.display_name || 'Anonymous'}
+                        </h4>
+                        <div className="text-lg font-bold text-primary">{player.total_points}</div>
+                        <div className="text-xs text-muted-foreground">pts</div>
+                      </Card>
+                    );
+                  })}
+                </div>
+              </div>
+
+              {/* Full Individual Rankings */}
+              <Card className="border-2 max-h-[500px] overflow-y-auto">
                 <div className="divide-y divide-border">
                   {standings.map((player) => (
                     <div 
                       key={player.id} 
-                      className={`p-4 flex items-center justify-between hover:bg-muted/50 racing-transition ${
+                      className={`p-3 flex items-center justify-between hover:bg-muted/50 racing-transition ${
                         player.isCurrentUser ? 'bg-primary/10 border-l-4 border-l-primary' : ''
                       }`}
                     >
-                      <div className="flex items-center gap-3">
-                        <div className="flex items-center gap-1 w-12">
-                          <span className="text-lg font-bold text-muted-foreground">#{player.rank}</span>
+                      <div className="flex items-center gap-2">
+                        <div className="flex items-center gap-1 w-8">
+                          <span className="text-sm font-bold text-muted-foreground">#{player.rank}</span>
                           {player.rank <= 3 && getRankIcon(player.rank)}
                         </div>
                         
-                        <Avatar className="w-8 h-8">
+                        <Avatar className="w-6 h-6">
                           <AvatarFallback className={`text-xs ${player.isCurrentUser ? 'bg-primary/20 text-primary' : ''}`}>
                             {getInitials(player.profile?.display_name)}
                           </AvatarFallback>
                         </Avatar>
                         
                         <div>
-                          <div className="font-semibold text-sm flex items-center gap-2">
+                          <div className="font-semibold text-xs flex items-center gap-1">
                             {player.profile?.display_name || 'Anonymous'}
-                            {player.isCurrentUser && <Badge variant="secondary" className="text-xs">You</Badge>}
+                            {player.isCurrentUser && <Badge variant="secondary" className="text-xs px-1 py-0">You</Badge>}
                           </div>
                           <div className="text-xs text-muted-foreground">
                             {player.profile?.team_name || 'No Team'}
@@ -188,13 +184,13 @@ const Leaderboard = () => {
                         </div>
                       </div>
                       
-                      <div className="flex items-center gap-4 text-right">
+                      <div className="flex items-center gap-3 text-right">
                         <div>
                           <div className="text-xs text-muted-foreground">Total</div>
                           <div className="text-sm font-bold">{player.total_points}</div>
                         </div>
                         
-                        <div className="flex items-center gap-1 w-8">
+                        <div className="flex items-center gap-1 w-6">
                           {getTrendIcon(player.rank, player.previous_rank)}
                           <span className={`text-xs font-medium ${
                             player.rank < (player.previous_rank || player.rank) ? 'text-accent' : 
@@ -210,50 +206,68 @@ const Leaderboard = () => {
                 </div>
               </Card>
             </div>
-          </div>
-        </div>
-      </section>
 
-      {/* League/Team Leaderboard Section */}
-      <section className="py-16 bg-background">
-        <div className="container px-4">
-          <div className="max-w-4xl mx-auto">
-            <div className="text-center mb-12">
-              <div className="flex items-center justify-center gap-2 mb-4">
-                <Users className="h-8 w-8 text-accent" />
-                <h2 className="text-4xl font-bold">Team Leaderboard</h2>
-              </div>
-              <p className="text-xl text-muted-foreground">
-                Rankings by team performance and collaboration
-              </p>
-            </div>
-
-            {/* Team Rankings */}
+            {/* Team Leaderboard */}
             <div>
-              <h3 className="text-xl font-bold flex items-center gap-2 mb-4">
-                <Trophy className="h-5 w-5 text-accent" />
-                Team Rankings
-              </h3>
-              
-              <Card className="border-2 max-h-[600px] overflow-y-auto">
+              <div className="text-center mb-8">
+                <div className="flex items-center justify-center gap-2 mb-4">
+                  <Users className="h-6 w-6 text-accent" />
+                  <h3 className="text-2xl font-bold">Team Leaderboard</h3>
+                </div>
+              </div>
+
+              {/* Top 3 Teams */}
+              <div className="mb-8">
+                <div className="grid grid-cols-3 gap-2">
+                  {leagueStandings.slice(0, 3).map((team, index) => {
+                    const positions = ['order-2', 'order-1', 'order-3'];
+                    const heights = ['h-24', 'h-32', 'h-20'];
+                    
+                    return (
+                      <Card 
+                        key={team.teamName} 
+                        className={`${positions[index]} p-4 text-center border-2 ${
+                          team.rank === 1 ? 'border-accent racing-shadow' : 'border-border'
+                        }`}
+                      >
+                        <div className={`${heights[index]} flex flex-col items-center justify-end mb-3`}>
+                          <div className="mb-1">{getRankIcon(team.rank)}</div>
+                          <div className="w-12 h-12 bg-gradient-to-br from-accent/20 to-primary/20 rounded-full flex items-center justify-center border-2 border-accent">
+                            <Users className="h-6 w-6 text-accent" />
+                          </div>
+                        </div>
+                        
+                        <h4 className="font-bold text-sm mb-1">
+                          {team.teamName}
+                        </h4>
+                        <div className="text-lg font-bold text-accent">{team.totalPoints}</div>
+                        <div className="text-xs text-muted-foreground">pts</div>
+                      </Card>
+                    );
+                  })}
+                </div>
+              </div>
+
+              {/* Full Team Rankings */}
+              <Card className="border-2 max-h-[500px] overflow-y-auto">
                 <div className="divide-y divide-border">
                   {leagueStandings.map((team) => (
                     <div 
                       key={team.teamName} 
-                      className="p-4 flex items-center justify-between hover:bg-muted/50 racing-transition"
+                      className="p-3 flex items-center justify-between hover:bg-muted/50 racing-transition"
                     >
-                      <div className="flex items-center gap-3">
-                        <div className="flex items-center gap-1 w-12">
-                          <span className="text-lg font-bold text-muted-foreground">#{team.rank}</span>
+                      <div className="flex items-center gap-2">
+                        <div className="flex items-center gap-1 w-8">
+                          <span className="text-sm font-bold text-muted-foreground">#{team.rank}</span>
                           {team.rank <= 3 && getRankIcon(team.rank)}
                         </div>
                         
-                        <div className="w-8 h-8 bg-gradient-to-br from-accent/20 to-primary/20 rounded-full flex items-center justify-center">
-                          <Users className="h-4 w-4 text-primary" />
+                        <div className="w-6 h-6 bg-gradient-to-br from-accent/20 to-primary/20 rounded-full flex items-center justify-center">
+                          <Users className="h-3 w-3 text-primary" />
                         </div>
                         
                         <div>
-                          <div className="font-semibold text-sm">
+                          <div className="font-semibold text-xs">
                             {team.teamName}
                           </div>
                           <div className="text-xs text-muted-foreground">
@@ -262,7 +276,7 @@ const Leaderboard = () => {
                         </div>
                       </div>
                       
-                      <div className="flex items-center gap-4 text-right">
+                      <div className="flex items-center gap-3 text-right">
                         <div>
                           <div className="text-xs text-muted-foreground">Avg</div>
                           <div className="text-sm font-medium text-accent">{Math.round(team.totalPoints / team.playerCount)}</div>
@@ -280,8 +294,8 @@ const Leaderboard = () => {
             </div>
           </div>
         </div>
-      </section>
-    </>
+      </div>
+    </section>
   );
 };
 
