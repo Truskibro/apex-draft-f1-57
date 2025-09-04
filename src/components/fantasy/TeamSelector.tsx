@@ -238,7 +238,7 @@ const RacePrediction = () => {
                 ) : (
                   <Card className="p-4 text-center border-2 border-dashed border-muted-foreground/30">
                     <Zap className="h-6 w-6 text-muted-foreground mx-auto mb-2" />
-                    <p className="text-sm text-muted-foreground">Click a driver below to predict fastest lap</p>
+                    <p className="text-sm text-muted-foreground">Choose who you think will set the fastest lap time during the race for +10 bonus points</p>
                   </Card>
                 )}
               </div>
