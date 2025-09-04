@@ -218,7 +218,7 @@ const RacePrediction = () => {
                 <Badge variant="secondary">{predictions.length}/10</Badge>
               </div>
               
-              <div className="space-y-2 min-h-[400px]">
+              <div className="space-y-2">
                 {predictions.length === 0 ? (
                   <Card className="p-8 text-center border-2 border-dashed border-muted-foreground/30">
                     <Target className="h-8 w-8 text-muted-foreground mx-auto mb-2" />
