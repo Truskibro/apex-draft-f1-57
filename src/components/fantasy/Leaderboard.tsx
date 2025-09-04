@@ -97,9 +97,7 @@ const Leaderboard = () => {
               <Trophy className="h-8 w-8 text-primary" />
               <h2 className="text-4xl font-bold bg-primary/10 p-4 rounded-lg">🏁 Leaderboards  🏆</h2>
             </div>
-            <p className="text-xl text-muted-foreground bg-accent/10 p-2 rounded">
-              Individual players and team standings - Updated Layout
-            </p>
+            
           </div>
 
           {/* Side by Side Leaderboards */}
