@@ -2,18 +2,21 @@ import React, { useState } from 'react';
 import { Card } from '@/components/ui/card';
 import { RacingButton } from '@/components/ui/racing-button';
 import { Badge } from '@/components/ui/badge';
-import { Crown, Trophy, TrendingUp, Zap, Target, Loader2, GripVertical } from 'lucide-react';
+import { Crown, Trophy, TrendingUp, Zap, Target, Loader2, GripVertical, Save, Check } from 'lucide-react';
 import { useDrivers } from '@/hooks/useDrivers';
+import { useToast } from '@/hooks/use-toast';
 
 // F1 Championship scoring system
 const championshipPoints = [25, 18, 15, 12, 10, 8, 6, 4, 2, 1];
 
 const RacePrediction = () => {
   const { drivers, loading } = useDrivers();
+  const { toast } = useToast();
   const [predictions, setPredictions] = useState<string[]>([]);
   const [fastestLapPrediction, setFastestLapPrediction] = useState<string>('');
   const [availableDrivers, setAvailableDrivers] = useState<string[]>([]);
   const [draggedIndex, setDraggedIndex] = useState<number | null>(null);
+  const [isSaved, setIsSaved] = useState(true);
 
   // Update available drivers when drivers data loads
   React.useEffect(() => {
@@ -67,6 +70,7 @@ const RacePrediction = () => {
     if (predictions.length < 10 && availableDrivers.includes(driverId)) {
       setPredictions([...predictions, driverId]);
       setAvailableDrivers(availableDrivers.filter(id => id !== driverId));
+      setIsSaved(false);
     }
   };
 
@@ -74,6 +78,7 @@ const RacePrediction = () => {
     const driverId = predictions[index];
     setPredictions(predictions.filter((_, i) => i !== index));
     setAvailableDrivers([...availableDrivers, driverId]);
+    setIsSaved(false);
     
     // Clear fastest lap prediction if it was the removed driver
     if (fastestLapPrediction === driverId) {
@@ -86,6 +91,21 @@ const RacePrediction = () => {
     const [movedDriver] = newPredictions.splice(fromIndex, 1);
     newPredictions.splice(toIndex, 0, movedDriver);
     setPredictions(newPredictions);
+    setIsSaved(false);
+  };
+
+  const handleSavePredictions = () => {
+    // Force save to localStorage
+    localStorage.setItem('f1-predictions', JSON.stringify(predictions));
+    if (fastestLapPrediction) {
+      localStorage.setItem('f1-fastest-lap', fastestLapPrediction);
+    }
+    
+    setIsSaved(true);
+    toast({
+      title: "Predictions Saved!",
+      description: `Saved ${predictions.length} predictions${fastestLapPrediction ? ' and fastest lap pick' : ''}`,
+    });
   };
 
   const handleDragStart = (e: React.DragEvent, index: number) => {
@@ -227,7 +247,11 @@ const RacePrediction = () => {
                             {/* Fastest lap button */}
                             {fastestLapPrediction !== driverId && (
                               <button
-                                onClick={() => setFastestLapPrediction(driverId)}
+                                onClick={(e) => {
+                                  e.stopPropagation();
+                                  setFastestLapPrediction(driverId);
+                                  setIsSaved(false);
+                                }}
                                 className="opacity-0 group-hover:opacity-100 transition-opacity bg-accent/20 hover:bg-accent/30 rounded p-1"
                                 title="Set as fastest lap prediction"
                               >
@@ -370,8 +394,19 @@ const RacePrediction = () => {
                   size="lg" 
                   className="w-full"
                   disabled={predictions.length === 0}
+                  onClick={handleSavePredictions}
                 >
-                  Submit Predictions
+                  {isSaved ? (
+                    <>
+                      <Check className="h-4 w-4 mr-2" />
+                      Predictions Saved
+                    </>
+                  ) : (
+                    <>
+                      <Save className="h-4 w-4 mr-2" />
+                      Save Predictions
+                    </>
+                  )}
                 </RacingButton>
               </div>
             </div>
