@@ -2,7 +2,7 @@ import React, { useState } from 'react';
 import { Card } from '@/components/ui/card';
 import { RacingButton } from '@/components/ui/racing-button';
 import { Badge } from '@/components/ui/badge';
-import { Crown, Trophy, TrendingUp, Zap, Target, Loader2, GripVertical, Save, Check } from 'lucide-react';
+import { Crown, Trophy, TrendingUp, Zap, Target, Loader2, GripVertical, Save, Check, X } from 'lucide-react';
 import { useDrivers } from '@/hooks/useDrivers';
 import { useToast } from '@/hooks/use-toast';
 
@@ -14,6 +14,7 @@ const RacePrediction = () => {
   const { toast } = useToast();
   const [predictions, setPredictions] = useState<string[]>([]);
   const [fastestLapPrediction, setFastestLapPrediction] = useState<string>('');
+  const [dnfPrediction, setDnfPrediction] = useState<string>('');
   const [availableDrivers, setAvailableDrivers] = useState<string[]>([]);
   const [draggedIndex, setDraggedIndex] = useState<number | null>(null);
   const [isSaved, setIsSaved] = useState(true);
@@ -25,8 +26,9 @@ const RacePrediction = () => {
       // Load saved predictions from localStorage
       const savedPredictions = localStorage.getItem('f1-predictions');
       const savedFastestLap = localStorage.getItem('f1-fastest-lap');
+      const savedDnf = localStorage.getItem('f1-dnf');
       
-      console.log('💾 localStorage data:', { savedPredictions, savedFastestLap });
+      console.log('💾 localStorage data:', { savedPredictions, savedFastestLap, savedDnf });
       
       if (savedPredictions) {
         const parsedPredictions = JSON.parse(savedPredictions);
@@ -52,6 +54,11 @@ const RacePrediction = () => {
         console.log('⚡ Setting fastest lap:', savedFastestLap);
         setFastestLapPrediction(savedFastestLap);
       }
+      
+      if (savedDnf && drivers.some(driver => driver.id === savedDnf)) {
+        console.log('❌ Setting DNF:', savedDnf);
+        setDnfPrediction(savedDnf);
+      }
     }
   }, [drivers]);
 
@@ -74,6 +81,11 @@ const RacePrediction = () => {
     if (fastestLapPrediction === driverId) {
       setFastestLapPrediction('');
     }
+    
+    // Clear DNF prediction if it was the removed driver
+    if (dnfPrediction === driverId) {
+      setDnfPrediction('');
+    }
   };
 
   const movePrediction = (fromIndex: number, toIndex: number) => {
@@ -87,11 +99,15 @@ const RacePrediction = () => {
   const handleSavePredictions = () => {
     console.log('💾 Saving predictions:', predictions);
     console.log('⚡ Saving fastest lap:', fastestLapPrediction);
+    console.log('❌ Saving DNF:', dnfPrediction);
     
     // Force save to localStorage
     localStorage.setItem('f1-predictions', JSON.stringify(predictions));
     if (fastestLapPrediction) {
       localStorage.setItem('f1-fastest-lap', fastestLapPrediction);
+    }
+    if (dnfPrediction) {
+      localStorage.setItem('f1-dnf', dnfPrediction);
     }
     
     // Verify save worked
@@ -101,7 +117,7 @@ const RacePrediction = () => {
     setIsSaved(true);
     toast({
       title: "Predictions Saved!",
-      description: `Saved ${predictions.length} predictions${fastestLapPrediction ? ' and fastest lap pick' : ''}`,
+      description: `Saved ${predictions.length} predictions${fastestLapPrediction ? ', fastest lap pick' : ''}${dnfPrediction ? ', and DNF pick' : ''}`,
     });
   };
 
@@ -136,7 +152,10 @@ const RacePrediction = () => {
     // Add fastest lap bonus
     const fastestLapBonus = fastestLapPrediction ? 10 : 0;
     
-    return finishingPoints + fastestLapBonus;
+    // Add DNF bonus
+    const dnfBonus = dnfPrediction ? 10 : 0;
+    
+    return finishingPoints + fastestLapBonus + dnfBonus;
   };
 
   const getTrendIcon = (points: number) => {
@@ -230,12 +249,15 @@ const RacePrediction = () => {
                             <GripVertical className="h-4 w-4 text-muted-foreground/50 group-hover:text-muted-foreground transition-colors" />
                             
                              <div>
-                               <div className="font-semibold flex items-center gap-2">
-                                 {driver.name}
-                                 {fastestLapPrediction === driverId && (
-                                   <Zap className="h-4 w-4 text-accent" />
-                                 )}
-                               </div>
+                              <div className="font-semibold flex items-center gap-2">
+                                {driver.name}
+                                {fastestLapPrediction === driverId && (
+                                  <Zap className="h-4 w-4 text-accent" />
+                                )}
+                                {dnfPrediction === driverId && (
+                                  <X className="h-4 w-4 text-destructive" />
+                                )}
+                              </div>
                                <div className="text-xs text-muted-foreground">{driver.team.name}</div>
                              </div>
                           </div>
@@ -253,6 +275,21 @@ const RacePrediction = () => {
                                 title="Set as fastest lap prediction"
                               >
                                 <Zap className="h-3 w-3 text-accent" />
+                              </button>
+                            )}
+
+                            {/* DNF button */}
+                            {dnfPrediction !== driverId && (
+                              <button
+                                onClick={(e) => {
+                                  e.stopPropagation();
+                                  setDnfPrediction(driverId);
+                                  setIsSaved(false);
+                                }}
+                                className="opacity-0 group-hover:opacity-100 transition-opacity bg-destructive/20 hover:bg-destructive/30 rounded p-1"
+                                title="Set as DNF prediction"
+                              >
+                                <X className="h-3 w-3 text-destructive" />
                               </button>
                             )}
 
@@ -313,6 +350,45 @@ const RacePrediction = () => {
                   </Card>
                 )}
               </div>
+
+              {/* DNF Prediction */}
+              <div className="mt-6">
+                <div className="flex items-center gap-2 mb-4">
+                  <X className="h-5 w-5 text-destructive" />
+                  <h4 className="text-lg font-bold">DNF Prediction</h4>
+                  <Badge variant="outline" className="bg-destructive/20 text-destructive">+10 pts</Badge>
+                </div>
+                
+                {dnfPrediction ? (
+                  <Card className="p-3 border-2 border-destructive/30 bg-destructive/10">
+                    <div className="flex items-center justify-between">
+                      <div className="flex items-center gap-3">
+                        <div className="w-8 h-8 bg-destructive rounded-full flex items-center justify-center text-destructive-foreground">
+                          <X className="h-4 w-4" />
+                        </div>
+                        <div>
+                          <div className="font-semibold">{getDriverById(dnfPrediction)?.name}</div>
+                          <div className="text-xs text-muted-foreground">DNF Prediction</div>
+                        </div>
+                      </div>
+                      <button
+                        onClick={() => {
+                          setDnfPrediction('');
+                          setIsSaved(false);
+                        }}
+                        className="text-destructive hover:text-destructive/80 text-sm"
+                      >
+                        ✕
+                      </button>
+                    </div>
+                  </Card>
+                ) : (
+                  <Card className="p-4 text-center border-2 border-dashed border-muted-foreground/30">
+                    <X className="h-6 w-6 text-muted-foreground mx-auto mb-2" />
+                    <p className="text-sm text-muted-foreground">Predict which driver will not finish the race (DNF) for +10 bonus points</p>
+                  </Card>
+                )}
+              </div>
             </div>
 
             {/* Available Drivers */}
@@ -368,6 +444,20 @@ const RacePrediction = () => {
                                 title="Predict fastest lap"
                               >
                                 <Zap className="h-4 w-4 text-accent" />
+                              </button>
+                            )}
+                            
+                            {!dnfPrediction && (
+                              <button
+                                onClick={(e) => {
+                                  e.stopPropagation();
+                                  setDnfPrediction(driver.id);
+                                  setIsSaved(false);
+                                }}
+                                className="opacity-0 group-hover:opacity-100 transition-opacity bg-destructive/20 hover:bg-destructive/30 rounded p-1"
+                                title="Predict DNF"
+                              >
+                                <X className="h-4 w-4 text-destructive" />
                               </button>
                             )}
                           </div>
