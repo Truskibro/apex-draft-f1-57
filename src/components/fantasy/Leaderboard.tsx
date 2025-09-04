@@ -99,10 +99,10 @@ const Leaderboard = () => {
           <div className="text-center mb-12">
             <div className="flex items-center justify-center gap-2 mb-4">
               <Trophy className="h-8 w-8 text-primary" />
-              <h2 className="text-4xl font-bold">Leaderboards</h2>
+              <h2 className="text-4xl font-bold bg-primary/10 p-4 rounded-lg">🏁 Leaderboards - Side by Side 🏆</h2>
             </div>
-            <p className="text-xl text-muted-foreground">
-              Individual players and team standings
+            <p className="text-xl text-muted-foreground bg-accent/10 p-2 rounded">
+              Individual players and team standings - Updated Layout
             </p>
           </div>
 
