@@ -14,7 +14,212 @@ export type Database = {
   }
   public: {
     Tables: {
-      [_ in never]: never
+      drivers: {
+        Row: {
+          country: string
+          created_at: string
+          id: string
+          name: string
+          number: number
+          team_id: string | null
+        }
+        Insert: {
+          country: string
+          created_at?: string
+          id?: string
+          name: string
+          number: number
+          team_id?: string | null
+        }
+        Update: {
+          country?: string
+          created_at?: string
+          id?: string
+          name?: string
+          number?: number
+          team_id?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "drivers_team_id_fkey"
+            columns: ["team_id"]
+            isOneToOne: false
+            referencedRelation: "teams"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      profiles: {
+        Row: {
+          created_at: string
+          display_name: string | null
+          id: string
+          team_name: string
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          display_name?: string | null
+          id: string
+          team_name: string
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          display_name?: string | null
+          id?: string
+          team_name?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
+      races: {
+        Row: {
+          country_flag: string
+          created_at: string
+          current_lap: string | null
+          id: string
+          location: string
+          name: string
+          race_date: string
+          race_time: string
+          status: Database["public"]["Enums"]["race_status"]
+          total_laps: number | null
+          updated_at: string
+          winner: string | null
+        }
+        Insert: {
+          country_flag: string
+          created_at?: string
+          current_lap?: string | null
+          id?: string
+          location: string
+          name: string
+          race_date: string
+          race_time: string
+          status?: Database["public"]["Enums"]["race_status"]
+          total_laps?: number | null
+          updated_at?: string
+          winner?: string | null
+        }
+        Update: {
+          country_flag?: string
+          created_at?: string
+          current_lap?: string | null
+          id?: string
+          location?: string
+          name?: string
+          race_date?: string
+          race_time?: string
+          status?: Database["public"]["Enums"]["race_status"]
+          total_laps?: number | null
+          updated_at?: string
+          winner?: string | null
+        }
+        Relationships: []
+      }
+      teams: {
+        Row: {
+          color: string
+          created_at: string
+          id: string
+          name: string
+        }
+        Insert: {
+          color: string
+          created_at?: string
+          id?: string
+          name: string
+        }
+        Update: {
+          color?: string
+          created_at?: string
+          id?: string
+          name?: string
+        }
+        Relationships: []
+      }
+      user_predictions: {
+        Row: {
+          created_at: string
+          id: string
+          points_earned: number | null
+          predicted_podium: string[] | null
+          predicted_winner: string | null
+          race_id: string
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          points_earned?: number | null
+          predicted_podium?: string[] | null
+          predicted_winner?: string | null
+          race_id: string
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          points_earned?: number | null
+          predicted_podium?: string[] | null
+          predicted_winner?: string | null
+          race_id?: string
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "user_predictions_predicted_winner_fkey"
+            columns: ["predicted_winner"]
+            isOneToOne: false
+            referencedRelation: "drivers"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "user_predictions_race_id_fkey"
+            columns: ["race_id"]
+            isOneToOne: false
+            referencedRelation: "races"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      user_standings: {
+        Row: {
+          created_at: string
+          id: string
+          previous_rank: number | null
+          rank: number | null
+          total_points: number
+          updated_at: string
+          user_id: string
+          weekly_points: number | null
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          previous_rank?: number | null
+          rank?: number | null
+          total_points?: number
+          updated_at?: string
+          user_id: string
+          weekly_points?: number | null
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          previous_rank?: number | null
+          rank?: number | null
+          total_points?: number
+          updated_at?: string
+          user_id?: string
+          weekly_points?: number | null
+        }
+        Relationships: []
+      }
     }
     Views: {
       [_ in never]: never
@@ -23,7 +228,7 @@ export type Database = {
       [_ in never]: never
     }
     Enums: {
-      [_ in never]: never
+      race_status: "upcoming" | "live" | "completed"
     }
     CompositeTypes: {
       [_ in never]: never
@@ -150,6 +355,8 @@ export type CompositeTypes<
 
 export const Constants = {
   public: {
-    Enums: {},
+    Enums: {
+      race_status: ["upcoming", "live", "completed"],
+    },
   },
 } as const

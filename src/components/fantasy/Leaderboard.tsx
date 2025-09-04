@@ -2,68 +2,12 @@ import React from 'react';
 import { Card } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Avatar, AvatarFallback } from '@/components/ui/avatar';
-import { Crown, Medal, Trophy, TrendingUp, Star } from 'lucide-react';
-
-const leaderboardData = [
-  {
-    id: 1,
-    rank: 1,
-    name: 'Alex Hamilton',
-    teamName: 'Speed Demons',
-    points: 1247,
-    weeklyPoints: 89,
-    trend: 'up',
-    change: '+2',
-    avatar: 'AH'
-  },
-  {
-    id: 2,
-    rank: 2,
-    name: 'Sarah McLaren',
-    teamName: 'Apex Hunters',
-    points: 1198,
-    weeklyPoints: 76,
-    trend: 'down',
-    change: '-1',
-    avatar: 'SM'
-  },
-  {
-    id: 3,
-    rank: 3,
-    name: 'Mike Verstappen',
-    teamName: 'Grid Legends',
-    points: 1156,
-    weeklyPoints: 82,
-    trend: 'up',
-    change: '+1',
-    avatar: 'MV'
-  },
-  {
-    id: 4,
-    rank: 4,
-    name: 'Emma Ferrari',
-    teamName: 'Pole Position',
-    points: 1089,
-    weeklyPoints: 65,
-    trend: 'stable',
-    change: '=',
-    avatar: 'EF'
-  },
-  {
-    id: 5,
-    rank: 5,
-    name: 'You',
-    teamName: 'Racing Rebels',
-    points: 1034,
-    weeklyPoints: 71,
-    trend: 'up',
-    change: '+3',
-    avatar: 'YO',
-    isCurrentUser: true
-  }
-];
+import { Crown, Medal, Trophy, TrendingUp, Star, Loader2 } from 'lucide-react';
+import { useStandings } from '@/hooks/useStandings';
 
 const Leaderboard = () => {
+  const { standings, loading } = useStandings();
+
   const getRankIcon = (rank: number) => {
     switch (rank) {
       case 1: return <Crown className="h-5 w-5 text-yellow-500" />;
@@ -73,13 +17,55 @@ const Leaderboard = () => {
     }
   };
 
-  const getTrendIcon = (trend: string) => {
-    switch (trend) {
-      case 'up': return <TrendingUp className="h-4 w-4 text-accent" />;
-      case 'down': return <TrendingUp className="h-4 w-4 text-destructive rotate-180" />;
-      default: return null;
+  const getTrendIcon = (rank: number, previousRank?: number) => {
+    if (!previousRank) return null;
+    
+    if (rank < previousRank) {
+      return <TrendingUp className="h-4 w-4 text-accent" />;
+    } else if (rank > previousRank) {
+      return <TrendingUp className="h-4 w-4 text-destructive rotate-180" />;
     }
+    return null;
   };
+
+  const getTrendChange = (rank: number, previousRank?: number) => {
+    if (!previousRank) return '=';
+    
+    const change = previousRank - rank;
+    if (change > 0) return `+${change}`;
+    if (change < 0) return change.toString();
+    return '=';
+  };
+
+  const getInitials = (name?: string) => {
+    if (!name) return '?';
+    return name.split(' ').map(n => n[0]).join('').toUpperCase().slice(0, 2);
+  };
+
+  if (loading) {
+    return (
+      <section className="py-16 bg-muted/20">
+        <div className="container px-4">
+          <div className="flex items-center justify-center">
+            <Loader2 className="h-8 w-8 animate-spin text-primary" />
+          </div>
+        </div>
+      </section>
+    );
+  }
+
+  if (standings.length === 0) {
+    return (
+      <section className="py-16 bg-muted/20">
+        <div className="container px-4">
+          <div className="max-w-4xl mx-auto text-center">
+            <h2 className="text-4xl font-bold mb-4">League Standings</h2>
+            <p className="text-muted-foreground">No standings available yet. Start making predictions!</p>
+          </div>
+        </div>
+      </section>
+    );
+  }
 
   return (
     <section className="py-16 bg-muted/20">
@@ -97,7 +83,7 @@ const Leaderboard = () => {
 
           {/* Top 3 Podium */}
           <div className="grid md:grid-cols-3 gap-4 mb-8">
-            {leaderboardData.slice(0, 3).map((player, index) => {
+            {standings.slice(0, 3).map((player, index) => {
               const positions = ['md:order-2', 'md:order-1', 'md:order-3'];
               const heights = ['h-32', 'h-40', 'h-24'];
               
@@ -112,14 +98,18 @@ const Leaderboard = () => {
                     <div className="mb-2">{getRankIcon(player.rank)}</div>
                     <Avatar className="w-16 h-16 border-2 border-primary">
                       <AvatarFallback className="bg-primary/20 text-primary font-bold">
-                        {player.avatar}
+                        {getInitials(player.profile?.display_name)}
                       </AvatarFallback>
                     </Avatar>
                   </div>
                   
-                  <h3 className="font-bold text-lg mb-1">{player.name}</h3>
-                  <p className="text-sm text-muted-foreground mb-2">{player.teamName}</p>
-                  <div className="text-2xl font-bold text-primary">{player.points}</div>
+                  <h3 className="font-bold text-lg mb-1">
+                    {player.profile?.display_name || 'Anonymous'}
+                  </h3>
+                  <p className="text-sm text-muted-foreground mb-2">
+                    {player.profile?.team_name || 'No Team'}
+                  </p>
+                  <div className="text-2xl font-bold text-primary">{player.total_points}</div>
                   <div className="text-xs text-muted-foreground">points</div>
                 </Card>
               );
@@ -136,7 +126,7 @@ const Leaderboard = () => {
             </div>
             
             <div className="divide-y divide-border">
-              {leaderboardData.map((player) => (
+              {standings.map((player) => (
                 <div 
                   key={player.id} 
                   className={`p-4 flex items-center justify-between hover:bg-muted/50 racing-transition ${
@@ -151,38 +141,40 @@ const Leaderboard = () => {
                     
                     <Avatar className="w-10 h-10">
                       <AvatarFallback className={player.isCurrentUser ? 'bg-primary/20 text-primary' : ''}>
-                        {player.avatar}
+                        {getInitials(player.profile?.display_name)}
                       </AvatarFallback>
                     </Avatar>
                     
                     <div>
                       <div className="font-semibold flex items-center gap-2">
-                        {player.name}
+                        {player.profile?.display_name || 'Anonymous'}
                         {player.isCurrentUser && <Badge variant="secondary">You</Badge>}
                       </div>
-                      <div className="text-sm text-muted-foreground">{player.teamName}</div>
+                      <div className="text-sm text-muted-foreground">
+                        {player.profile?.team_name || 'No Team'}
+                      </div>
                     </div>
                   </div>
                   
                   <div className="flex items-center gap-6 text-right">
                     <div>
                       <div className="text-sm text-muted-foreground">This Week</div>
-                      <div className="font-medium text-accent">+{player.weeklyPoints}</div>
+                      <div className="font-medium text-accent">+{player.weekly_points}</div>
                     </div>
                     
                     <div>
                       <div className="text-sm text-muted-foreground">Total Points</div>
-                      <div className="text-lg font-bold">{player.points}</div>
+                      <div className="text-lg font-bold">{player.total_points}</div>
                     </div>
                     
                     <div className="flex items-center gap-1 w-12">
-                      {getTrendIcon(player.trend)}
+                      {getTrendIcon(player.rank, player.previous_rank)}
                       <span className={`text-sm font-medium ${
-                        player.trend === 'up' ? 'text-accent' : 
-                        player.trend === 'down' ? 'text-destructive' : 
+                        player.rank < (player.previous_rank || player.rank) ? 'text-accent' : 
+                        player.rank > (player.previous_rank || player.rank) ? 'text-destructive' : 
                         'text-muted-foreground'
                       }`}>
-                        {player.change}
+                        {getTrendChange(player.rank, player.previous_rank)}
                       </span>
                     </div>
                   </div>
