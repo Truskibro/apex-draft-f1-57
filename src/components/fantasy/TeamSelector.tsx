@@ -68,7 +68,7 @@ const RacePrediction = () => {
   }
 
   return (
-    <section className="py-16 bg-muted/20">
+    <section className="py-16 bg-muted/20" data-section="team-selector">
       <div className="container px-4">
         <div className="max-w-6xl mx-auto">
           <div className="text-center mb-12">

@@ -124,17 +124,37 @@ const RaceCalendar = () => {
 
                   <div className="flex flex-col gap-2 md:text-right">
                     {race.status === 'upcoming' && (
-                      <RacingButton variant="outline" size="sm">
+                      <RacingButton 
+                        variant="outline" 
+                        size="sm"
+                        onClick={() => {
+                          // Scroll to team selector section
+                          const teamSelector = document.querySelector('[data-section="team-selector"]');
+                          teamSelector?.scrollIntoView({ behavior: 'smooth' });
+                        }}
+                      >
                         Edit Team
                       </RacingButton>
                     )}
                     {race.status === 'completed' && (
-                      <RacingButton variant="ghost" size="sm">
+                      <RacingButton 
+                        variant="ghost" 
+                        size="sm"
+                        onClick={() => {
+                          alert(`Race Results for ${race.name}:\n\nWinner: ${race.winner || 'TBD'}\n\nFull results coming soon!`);
+                        }}
+                      >
                         View Results
                       </RacingButton>
                     )}
                     {race.status === 'live' && (
-                      <RacingButton variant="neon" size="sm">
+                      <RacingButton 
+                        variant="neon" 
+                        size="sm"
+                        onClick={() => {
+                          window.open('https://www.formula1.com/en/live-timing.html', '_blank');
+                        }}
+                      >
                         Watch Live
                       </RacingButton>
                     )}
