@@ -18,9 +18,50 @@ const RacePrediction = () => {
   // Update available drivers when drivers data loads
   React.useEffect(() => {
     if (drivers.length > 0) {
-      setAvailableDrivers(drivers.map(d => d.id));
+      // Load saved predictions from localStorage
+      const savedPredictions = localStorage.getItem('f1-predictions');
+      const savedFastestLap = localStorage.getItem('f1-fastest-lap');
+      
+      if (savedPredictions) {
+        const parsedPredictions = JSON.parse(savedPredictions);
+        // Validate that all saved driver IDs still exist
+        const validPredictions = parsedPredictions.filter((id: string) => 
+          drivers.some(driver => driver.id === id)
+        );
+        setPredictions(validPredictions);
+        
+        // Set available drivers (excluding those in predictions)
+        const remainingDrivers = drivers
+          .map(d => d.id)
+          .filter(id => !validPredictions.includes(id));
+        setAvailableDrivers(remainingDrivers);
+      } else {
+        setAvailableDrivers(drivers.map(d => d.id));
+      }
+      
+      if (savedFastestLap && drivers.some(driver => driver.id === savedFastestLap)) {
+        setFastestLapPrediction(savedFastestLap);
+      }
     }
   }, [drivers]);
+
+  // Save predictions to localStorage whenever they change
+  React.useEffect(() => {
+    if (predictions.length > 0) {
+      localStorage.setItem('f1-predictions', JSON.stringify(predictions));
+    } else {
+      localStorage.removeItem('f1-predictions');
+    }
+  }, [predictions]);
+
+  // Save fastest lap prediction to localStorage whenever it changes
+  React.useEffect(() => {
+    if (fastestLapPrediction) {
+      localStorage.setItem('f1-fastest-lap', fastestLapPrediction);
+    } else {
+      localStorage.removeItem('f1-fastest-lap');
+    }
+  }, [fastestLapPrediction]);
 
   const addToPrediction = (driverId: string) => {
     if (predictions.length < 10 && availableDrivers.includes(driverId)) {
