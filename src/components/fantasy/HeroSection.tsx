@@ -22,7 +22,7 @@ const HeroSection = () => {
         <div className="max-w-3xl">
           <div className="mb-6 inline-flex items-center gap-2 px-4 py-2 bg-primary/20 border border-primary/30 rounded-full">
             <Zap className="h-4 w-4 text-primary" />
-            <span className="text-sm font-medium text-primary">2024 Season Live</span>
+            <span className="text-sm font-medium text-primary">2025 Season Live</span>
           </div>
 
           <h1 className="text-5xl md:text-7xl font-bold mb-6 leading-tight">

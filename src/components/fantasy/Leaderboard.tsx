@@ -59,7 +59,7 @@ const Leaderboard = () => {
       <section className="py-16 bg-muted/20">
         <div className="container px-4">
           <div className="max-w-4xl mx-auto text-center">
-            <h2 className="text-4xl font-bold mb-4">League Standings</h2>
+            <h2 className="text-4xl font-bold mb-4">Individual Standings</h2>
             <p className="text-muted-foreground">No standings available yet. Start making predictions!</p>
           </div>
         </div>
@@ -74,7 +74,7 @@ const Leaderboard = () => {
           <div className="text-center mb-12">
             <div className="flex items-center justify-center gap-2 mb-4">
               <Trophy className="h-8 w-8 text-primary" />
-              <h2 className="text-4xl font-bold">League Standings</h2>
+              <h2 className="text-4xl font-bold">Individual Standings</h2>
             </div>
             <p className="text-xl text-muted-foreground">
               See how you stack up against the competition
