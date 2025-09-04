@@ -16,6 +16,7 @@ export type Database = {
     Tables: {
       drivers: {
         Row: {
+          championship_points: number | null
           country: string
           created_at: string
           id: string
@@ -24,6 +25,7 @@ export type Database = {
           team_id: string | null
         }
         Insert: {
+          championship_points?: number | null
           country: string
           created_at?: string
           id?: string
@@ -32,6 +34,7 @@ export type Database = {
           team_id?: string | null
         }
         Update: {
+          championship_points?: number | null
           country?: string
           created_at?: string
           id?: string

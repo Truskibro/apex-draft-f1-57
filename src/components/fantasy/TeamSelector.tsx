@@ -2,29 +2,25 @@ import React, { useState } from 'react';
 import { Card } from '@/components/ui/card';
 import { RacingButton } from '@/components/ui/racing-button';
 import { Badge } from '@/components/ui/badge';
-import { Crown, Trophy, TrendingUp, Zap, Target } from 'lucide-react';
-
-const drivers = [
-  { id: 1, name: 'Max Verstappen', team: 'Red Bull Racing', seasonPoints: 524, trend: 'up' },
-  { id: 2, name: 'Sergio Pérez', team: 'Red Bull Racing', seasonPoints: 285, trend: 'down' },
-  { id: 3, name: 'Lewis Hamilton', team: 'Mercedes', seasonPoints: 234, trend: 'up' },
-  { id: 4, name: 'George Russell', team: 'Mercedes', seasonPoints: 175, trend: 'up' },
-  { id: 5, name: 'Fernando Alonso', team: 'Aston Martin', seasonPoints: 206, trend: 'stable' },
-  { id: 6, name: 'Charles Leclerc', team: 'Ferrari', seasonPoints: 198, trend: 'up' },
-  { id: 7, name: 'Carlos Sainz Jr.', team: 'Ferrari', seasonPoints: 156, trend: 'up' },
-  { id: 8, name: 'Lando Norris', team: 'McLaren', seasonPoints: 97, trend: 'up' },
-  { id: 9, name: 'Oscar Piastri', team: 'McLaren', seasonPoints: 71, trend: 'up' },
-  { id: 10, name: 'Lance Stroll', team: 'Aston Martin', seasonPoints: 74, trend: 'stable' },
-];
+import { Crown, Trophy, TrendingUp, Zap, Target, Loader2 } from 'lucide-react';
+import { useDrivers } from '@/hooks/useDrivers';
 
 // F1 Championship scoring system
 const championshipPoints = [25, 18, 15, 12, 10, 8, 6, 4, 2, 1];
 
 const RacePrediction = () => {
-  const [predictions, setPredictions] = useState<number[]>([]);
-  const [availableDrivers, setAvailableDrivers] = useState<number[]>(drivers.map(d => d.id));
+  const { drivers, loading } = useDrivers();
+  const [predictions, setPredictions] = useState<string[]>([]);
+  const [availableDrivers, setAvailableDrivers] = useState<string[]>([]);
 
-  const addToPrediction = (driverId: number) => {
+  // Update available drivers when drivers data loads
+  React.useEffect(() => {
+    if (drivers.length > 0) {
+      setAvailableDrivers(drivers.map(d => d.id));
+    }
+  }, [drivers]);
+
+  const addToPrediction = (driverId: string) => {
     if (predictions.length < 10 && availableDrivers.includes(driverId)) {
       setPredictions([...predictions, driverId]);
       setAvailableDrivers(availableDrivers.filter(id => id !== driverId));
@@ -37,7 +33,7 @@ const RacePrediction = () => {
     setAvailableDrivers([...availableDrivers, driverId]);
   };
 
-  const getDriverById = (id: number) => drivers.find(d => d.id === id);
+  const getDriverById = (id: string) => drivers.find(d => d.id === id);
 
   const getPotentialPoints = () => {
     return predictions.reduce((total, driverId, index) => {
@@ -48,13 +44,28 @@ const RacePrediction = () => {
     }, 0);
   };
 
-  const getTrendIcon = (trend: string) => {
-    switch (trend) {
-      case 'up': return <TrendingUp className="h-3 w-3 text-accent" />;
-      case 'down': return <TrendingUp className="h-3 w-3 text-destructive rotate-180" />;
-      default: return <Zap className="h-3 w-3 text-muted-foreground" />;
-    }
+  const getTrendIcon = (points: number) => {
+    // Simple trend based on championship points ranges
+    if (points > 200) return <TrendingUp className="h-3 w-3 text-accent" />;
+    if (points > 100) return <TrendingUp className="h-3 w-3 text-yellow-500" />;
+    if (points > 50) return <Zap className="h-3 w-3 text-muted-foreground" />;
+    return <TrendingUp className="h-3 w-3 text-destructive rotate-180" />;
   };
+
+  if (loading) {
+    return (
+      <section className="py-16 bg-muted/20">
+        <div className="container px-4">
+          <div className="max-w-6xl mx-auto">
+            <div className="flex items-center justify-center">
+              <Loader2 className="h-8 w-8 animate-spin text-primary" />
+              <span className="ml-2 text-lg">Loading drivers...</span>
+            </div>
+          </div>
+        </div>
+      </section>
+    );
+  }
 
   return (
     <section className="py-16 bg-muted/20">
@@ -114,10 +125,10 @@ const RacePrediction = () => {
                             <div className="w-8 h-8 bg-primary rounded-full flex items-center justify-center text-primary-foreground font-bold text-sm">
                               {index + 1}
                             </div>
-                            <div>
-                              <div className="font-semibold">{driver.name}</div>
-                              <div className="text-xs text-muted-foreground">{driver.team}</div>
-                            </div>
+                             <div>
+                               <div className="font-semibold">{driver.name}</div>
+                               <div className="text-xs text-muted-foreground">{driver.team.name}</div>
+                             </div>
                           </div>
                           
                           <div className="flex items-center gap-2">
@@ -164,18 +175,18 @@ const RacePrediction = () => {
                             <Crown className="h-5 w-5 text-accent" />
                           </div>
                           <div>
-                            <div className="font-semibold flex items-center gap-2">
-                              {driver.name}
-                              {getTrendIcon(driver.trend)}
-                            </div>
-                            <div className="text-sm text-muted-foreground">{driver.team}</div>
+                             <div className="font-semibold flex items-center gap-2">
+                               {driver.name}
+                               {getTrendIcon(driver.championship_points)}
+                             </div>
+                             <div className="text-sm text-muted-foreground">{driver.team.name}</div>
                           </div>
                         </div>
                         
-                        <div className="text-right">
-                          <div className="text-sm text-muted-foreground">Season</div>
-                          <div className="text-sm font-medium text-accent">{driver.seasonPoints} pts</div>
-                        </div>
+                         <div className="text-right">
+                           <div className="text-sm text-muted-foreground">Season</div>
+                           <div className="text-sm font-medium text-accent">{driver.championship_points} pts</div>
+                         </div>
                       </div>
                     </Card>
                   );
