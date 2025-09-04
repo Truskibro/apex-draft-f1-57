@@ -2,7 +2,7 @@ import React, { useState } from 'react';
 import { Card } from '@/components/ui/card';
 import { RacingButton } from '@/components/ui/racing-button';
 import { Badge } from '@/components/ui/badge';
-import { Crown, Trophy, TrendingUp, Zap, Target, Loader2 } from 'lucide-react';
+import { Crown, Trophy, TrendingUp, Zap, Target, Loader2, ArrowUp, ArrowDown } from 'lucide-react';
 import { useDrivers } from '@/hooks/useDrivers';
 
 // F1 Championship scoring system
@@ -32,6 +32,18 @@ const RacePrediction = () => {
     const driverId = predictions[index];
     setPredictions(predictions.filter((_, i) => i !== index));
     setAvailableDrivers([...availableDrivers, driverId]);
+    
+    // Clear fastest lap prediction if it was the removed driver
+    if (fastestLapPrediction === driverId) {
+      setFastestLapPrediction('');
+    }
+  };
+
+  const movePrediction = (fromIndex: number, toIndex: number) => {
+    const newPredictions = [...predictions];
+    const [movedDriver] = newPredictions.splice(fromIndex, 1);
+    newPredictions.splice(toIndex, 0, movedDriver);
+    setPredictions(newPredictions);
   };
 
   const getDriverById = (id: string) => drivers.find(d => d.id === id);
@@ -124,7 +136,7 @@ const RacePrediction = () => {
                     return (
                       <Card 
                         key={`${driverId}-${index}`}
-                        className="p-3 border-2 border-primary/20 bg-primary/5 hover:bg-primary/10 racing-transition"
+                        className="p-3 border-2 border-primary/20 bg-primary/5 hover:bg-primary/10 racing-transition group"
                       >
                         <div className="flex items-center justify-between">
                           <div className="flex items-center gap-3">
@@ -132,18 +144,58 @@ const RacePrediction = () => {
                               {index + 1}
                             </div>
                              <div>
-                               <div className="font-semibold">{driver.name}</div>
+                               <div className="font-semibold flex items-center gap-2">
+                                 {driver.name}
+                                 {fastestLapPrediction === driverId && (
+                                   <Zap className="h-4 w-4 text-accent" />
+                                 )}
+                               </div>
                                <div className="text-xs text-muted-foreground">{driver.team.name}</div>
                              </div>
                           </div>
                           
                           <div className="flex items-center gap-2">
+                            {/* Reorder buttons */}
+                            <div className="flex flex-col opacity-0 group-hover:opacity-100 transition-opacity">
+                              {index > 0 && (
+                                <button
+                                  onClick={() => movePrediction(index, index - 1)}
+                                  className="text-muted-foreground hover:text-primary text-xs p-1"
+                                  title="Move up"
+                                >
+                                  <ArrowUp className="h-3 w-3" />
+                                </button>
+                              )}
+                              {index < predictions.length - 1 && (
+                                <button
+                                  onClick={() => movePrediction(index, index + 1)}
+                                  className="text-muted-foreground hover:text-primary text-xs p-1"
+                                  title="Move down"
+                                >
+                                  <ArrowDown className="h-3 w-3" />
+                                </button>
+                              )}
+                            </div>
+
+                            {/* Fastest lap button */}
+                            {fastestLapPrediction !== driverId && (
+                              <button
+                                onClick={() => setFastestLapPrediction(driverId)}
+                                className="opacity-0 group-hover:opacity-100 transition-opacity bg-accent/20 hover:bg-accent/30 rounded p-1"
+                                title="Set as fastest lap prediction"
+                              >
+                                <Zap className="h-3 w-3 text-accent" />
+                              </button>
+                            )}
+
                             <Badge variant="outline" className="text-xs">
                               +{championshipPoints[index] || 0} pts
                             </Badge>
+                            
                             <button
                               onClick={() => removeFromPrediction(index)}
                               className="text-destructive hover:text-destructive/80 text-sm"
+                              title="Remove from predictions"
                             >
                               ✕
                             </button>
