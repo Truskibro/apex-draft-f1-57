@@ -313,7 +313,7 @@ const RacePrediction = () => {
               </div>
               
               {/* Fastest Lap Prediction */}
-              <div className="mt-6">
+              <div className="mt-4">
                 <div className="flex items-center gap-2 mb-4">
                   <Zap className="h-5 w-5 text-accent" />
                   <h4 className="text-lg font-bold">Fastest Lap Prediction</h4>
@@ -352,7 +352,7 @@ const RacePrediction = () => {
               </div>
 
               {/* DNF Prediction */}
-              <div className="mt-6">
+              <div className="mt-4">
                 <div className="flex items-center gap-2 mb-4">
                   <X className="h-5 w-5 text-destructive" />
                   <h4 className="text-lg font-bold">DNF Prediction</h4>
