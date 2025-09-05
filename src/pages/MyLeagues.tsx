@@ -4,6 +4,7 @@ import Header from '@/components/layout/Header';
 import { RacingButton } from '@/components/ui/racing-button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
+import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from '@/components/ui/alert-dialog';
 import { useAuth } from '@/hooks/useAuth';
 import { useToast } from '@/hooks/use-toast';
 import { supabase } from '@/integrations/supabase/client';
@@ -15,7 +16,8 @@ import {
   Plus,
   Calendar,
   Crown,
-  User
+  User,
+  Trash2
 } from 'lucide-react';
 
 interface League {
@@ -89,6 +91,30 @@ const MyLeagues = () => {
       });
     } finally {
       setLoading(false);
+    }
+  };
+
+  const deleteLeague = async (leagueId: string, leagueName: string) => {
+    try {
+      const { error } = await supabase
+        .from('leagues')
+        .delete()
+        .eq('id', leagueId);
+
+      if (error) throw error;
+
+      setLeagues(leagues.filter(league => league.id !== leagueId));
+      toast({
+        title: 'League Deleted',
+        description: `"${leagueName}" has been successfully deleted.`,
+      });
+    } catch (error) {
+      console.error('Error deleting league:', error);
+      toast({
+        title: 'Error',
+        description: 'Failed to delete league. Please try again.',
+        variant: 'destructive',
+      });
     }
   };
 
@@ -193,11 +219,39 @@ const MyLeagues = () => {
                       {new Date(league.created_at).toLocaleDateString()}
                     </div>
                   </div>
-                  <RacingButton variant="outline" size="sm" className="w-full" asChild>
-                    <Link to={`/league/${league.id}`}>
-                      View League
-                    </Link>
-                  </RacingButton>
+                  <div className="flex gap-2">
+                    <RacingButton variant="outline" size="sm" className="flex-1" asChild>
+                      <Link to={`/league/${league.id}`}>
+                        View League
+                      </Link>
+                    </RacingButton>
+                    {league.user_role === 'owner' && (
+                      <AlertDialog>
+                        <AlertDialogTrigger asChild>
+                          <RacingButton variant="ghost" size="sm" className="text-destructive hover:text-destructive">
+                            <Trash2 className="h-4 w-4" />
+                          </RacingButton>
+                        </AlertDialogTrigger>
+                        <AlertDialogContent>
+                          <AlertDialogHeader>
+                            <AlertDialogTitle>Delete League</AlertDialogTitle>
+                            <AlertDialogDescription>
+                              Are you sure you want to delete "{league.name}"? This action cannot be undone and will remove all league data including member information and predictions.
+                            </AlertDialogDescription>
+                          </AlertDialogHeader>
+                          <AlertDialogFooter>
+                            <AlertDialogCancel>Cancel</AlertDialogCancel>
+                            <AlertDialogAction 
+                              onClick={() => deleteLeague(league.id, league.name)}
+                              className="bg-destructive hover:bg-destructive/90"
+                            >
+                              Delete League
+                            </AlertDialogAction>
+                          </AlertDialogFooter>
+                        </AlertDialogContent>
+                      </AlertDialog>
+                    )}
+                  </div>
                 </CardContent>
               </Card>
             ))}
