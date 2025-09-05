@@ -82,8 +82,16 @@ const Leaderboard = () => {
     return <section className="py-16 bg-muted/20">
         <div className="container px-4">
           <div className="max-w-4xl mx-auto text-center">
-            <h2 className="text-4xl font-bold mb-4">Standings</h2>
-            <p className="text-muted-foreground">No standings available yet. Start making predictions!</p>
+            <div className="flex items-center justify-center gap-2 mb-4">
+              <Trophy className="h-8 w-8 text-primary" />
+              <h2 className="text-4xl font-bold">Leaderboards</h2>
+            </div>
+            <p className="text-muted-foreground mb-6">
+              No standings available yet. Be the first to make predictions and start earning points!
+            </p>
+            <div className="text-sm text-muted-foreground">
+              Standings will appear here once users make race predictions and earn points.
+            </div>
           </div>
         </div>
       </section>;
