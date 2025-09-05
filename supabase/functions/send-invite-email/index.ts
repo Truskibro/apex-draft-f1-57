@@ -28,7 +28,7 @@ const handler = async (req: Request): Promise<Response> => {
     const inviteLink = `https://klpuiqqyfemqzljqttnq.supabase.co/league/${leagueId}`;
 
     const emailResponse = await resend.emails.send({
-      from: "F1 Fantasy <onboarding@resend.dev>",
+      from: "F1 Fantasy <no-reply@yourdomain.com>", // Change this to your verified domain
       to: [email],
       subject: `${inviterName} invited you to join ${leagueName}`,
       html: `
