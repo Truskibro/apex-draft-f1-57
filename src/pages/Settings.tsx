@@ -70,6 +70,7 @@ const Settings = () => {
           id: user.id,
           display_name: null,
           bio: null,
+          team_name: 'Racing Team', // Default team name
         };
         
         const { error: insertError } = await supabase
