@@ -43,21 +43,12 @@ const Header = () => {
           </Link>
           
           {user && (
-            <>
-              <RacingButton variant="ghost" size="sm" asChild>
-                <Link to="/my-leagues" className="flex items-center gap-2">
-                  <Trophy className="h-4 w-4" />
-                  <span className="hidden sm:inline">My Leagues</span>
-                </Link>
-              </RacingButton>
-              
-              <JoinLeagueDialog>
-                <RacingButton variant="ghost" size="sm" className="flex items-center gap-2">
-                  <UserPlus className="h-4 w-4" />
-                  <span className="hidden sm:inline">Join League</span>
-                </RacingButton>
-              </JoinLeagueDialog>
-            </>
+            <RacingButton variant="ghost" size="sm" asChild>
+              <Link to="/my-leagues" className="flex items-center gap-2">
+                <Trophy className="h-4 w-4" />
+                <span className="hidden sm:inline">My Leagues</span>
+              </Link>
+            </RacingButton>
           )}
         </div>
 
