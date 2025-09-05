@@ -20,6 +20,7 @@ import {
   Lock, 
   UserPlus, 
   Copy,
+  Mail,
   Crown,
   User
 } from 'lucide-react';
@@ -55,7 +56,7 @@ const LeagueManagement = () => {
   const [editMode, setEditMode] = useState(false);
   const [editedName, setEditedName] = useState('');
   const [editedDescription, setEditedDescription] = useState('');
-  
+  const [inviteEmail, setInviteEmail] = useState('');
 
   useEffect(() => {
     if (leagueId) {
@@ -152,14 +153,15 @@ const LeagueManagement = () => {
     });
   };
 
-  const copyLeagueId = () => {
-    if (leagueId) {
-      navigator.clipboard.writeText(leagueId);
-      toast({
-        title: 'Copied!',
-        description: 'League ID copied to clipboard.',
-      });
-    }
+  const sendInviteEmail = async () => {
+    if (!inviteEmail.trim()) return;
+
+    // This would need an edge function to send emails
+    toast({
+      title: 'Feature Coming Soon',
+      description: 'Email invitations will be available soon!',
+    });
+    setInviteEmail('');
   };
 
   const isOwner = user && league && user.id === league.owner_id;
@@ -303,7 +305,15 @@ const LeagueManagement = () => {
                     />
                     <RacingButton 
                       variant="outline" 
-                      onClick={copyLeagueId}
+                      onClick={() => {
+                        if (leagueId) {
+                          navigator.clipboard.writeText(leagueId);
+                          toast({
+                            title: 'Copied!',
+                            description: 'League ID copied to clipboard.',
+                          });
+                        }
+                      }}
                     >
                       <Copy className="h-4 w-4" />
                     </RacingButton>
@@ -311,6 +321,24 @@ const LeagueManagement = () => {
                   <p className="text-xs text-muted-foreground">
                     Share this ID with others so they can join your league
                   </p>
+                </div>
+                <Separator />
+                <div className="space-y-2">
+                  <Label htmlFor="invite-email">Invite by Email</Label>
+                  <div className="flex gap-2">
+                    <Input
+                      id="invite-email"
+                      type="email"
+                      placeholder="friend@example.com"
+                      value={inviteEmail}
+                      onChange={(e) => setInviteEmail(e.target.value)}
+                      className="flex-1"
+                    />
+                    <RacingButton onClick={sendInviteEmail} disabled={!inviteEmail.trim()}>
+                      <Mail className="h-4 w-4" />
+                      Send
+                    </RacingButton>
+                  </div>
                 </div>
               </CardContent>
             </Card>
