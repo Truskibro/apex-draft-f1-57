@@ -50,21 +50,22 @@ const Header = () => {
                   <span className="hidden sm:inline">My Leagues</span>
                 </Link>
               </RacingButton>
-              
-              <RacingButton 
-                variant="ghost" 
-                size="sm" 
-                className="flex items-center gap-2"
-                onClick={() => {
-                  console.log('Join League button clicked!');
-                  alert('Join League button works!');
-                }}
-              >
-                <UserPlus className="h-4 w-4" />
-                <span className="hidden sm:inline">Join League</span>
-              </RacingButton>
             </>
           )}
+          
+          {/* Test button - always visible */}
+          <RacingButton 
+            variant="ghost" 
+            size="sm" 
+            className="flex items-center gap-2"
+            onClick={() => {
+              console.log('Join League button clicked!');
+              alert('Join League button works!');
+            }}
+          >
+            <UserPlus className="h-4 w-4" />
+            <span className="hidden sm:inline">Test Button</span>
+          </RacingButton>
         </div>
 
         <div className="flex items-center gap-3">
