@@ -1,10 +1,11 @@
 import React from 'react';
 import { Link } from 'react-router-dom';
 import { RacingButton } from '@/components/ui/racing-button';
-import { Flag, Settings, LogOut, Trophy } from 'lucide-react';
+import { Flag, Settings, LogOut, Trophy, UserPlus } from 'lucide-react';
 import { useAuth } from '@/hooks/useAuth';
 import { useToast } from '@/hooks/use-toast';
 import { useStandings } from '@/hooks/useStandings';
+import JoinLeagueDialog from '@/components/fantasy/JoinLeagueDialog';
 
 const Header = () => {
   const { user, signOut } = useAuth();
@@ -42,12 +43,21 @@ const Header = () => {
           </Link>
           
           {user && (
-            <RacingButton variant="ghost" size="sm" asChild>
-              <Link to="/my-leagues" className="flex items-center gap-2">
-                <Trophy className="h-4 w-4" />
-                <span className="hidden sm:inline">My Leagues</span>
-              </Link>
-            </RacingButton>
+            <>
+              <RacingButton variant="ghost" size="sm" asChild>
+                <Link to="/my-leagues" className="flex items-center gap-2">
+                  <Trophy className="h-4 w-4" />
+                  <span className="hidden sm:inline">My Leagues</span>
+                </Link>
+              </RacingButton>
+              
+              <JoinLeagueDialog>
+                <RacingButton variant="ghost" size="sm" className="flex items-center gap-2">
+                  <UserPlus className="h-4 w-4" />
+                  <span className="hidden sm:inline">Join League</span>
+                </RacingButton>
+              </JoinLeagueDialog>
+            </>
           )}
         </div>
 

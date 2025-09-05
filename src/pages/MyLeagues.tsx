@@ -8,6 +8,7 @@ import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, 
 import { useAuth } from '@/hooks/useAuth';
 import { useToast } from '@/hooks/use-toast';
 import { supabase } from '@/integrations/supabase/client';
+import JoinLeagueDialog from '@/components/fantasy/JoinLeagueDialog';
 import { 
   Trophy, 
   Users, 
@@ -17,7 +18,8 @@ import {
   Calendar,
   Crown,
   User,
-  Trash2
+  Trash2,
+  UserPlus
 } from 'lucide-react';
 
 interface League {
@@ -148,12 +150,20 @@ const MyLeagues = () => {
               Manage and view all your F1 fantasy leagues
             </p>
           </div>
-          <RacingButton asChild>
-            <Link to="/create-league" className="flex items-center gap-2">
-              <Plus className="h-4 w-4" />
-              Create League
-            </Link>
-          </RacingButton>
+          <div className="flex gap-3">
+            <JoinLeagueDialog onLeagueJoined={fetchMyLeagues}>
+              <RacingButton variant="outline" className="flex items-center gap-2">
+                <UserPlus className="h-4 w-4" />
+                Join League
+              </RacingButton>
+            </JoinLeagueDialog>
+            <RacingButton asChild>
+              <Link to="/create-league" className="flex items-center gap-2">
+                <Plus className="h-4 w-4" />
+                Create League
+              </Link>
+            </RacingButton>
+          </div>
         </div>
 
         {loading ? (
@@ -172,9 +182,11 @@ const MyLeagues = () => {
                 <RacingButton asChild>
                   <Link to="/create-league">Create League</Link>
                 </RacingButton>
-                <RacingButton variant="outline" asChild>
-                  <Link to="/">Browse Public Leagues</Link>
-                </RacingButton>
+                <JoinLeagueDialog onLeagueJoined={fetchMyLeagues}>
+                  <RacingButton variant="outline">
+                    Join League
+                  </RacingButton>
+                </JoinLeagueDialog>
               </div>
             </CardContent>
           </Card>
