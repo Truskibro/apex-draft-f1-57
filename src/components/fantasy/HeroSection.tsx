@@ -1,4 +1,5 @@
 import React from 'react';
+import { Link } from 'react-router-dom';
 import { RacingButton } from '@/components/ui/racing-button';
 import { Trophy, Zap, Users } from 'lucide-react';
 import heroImage from '@/assets/f1-hero.jpg';
@@ -39,9 +40,11 @@ const HeroSection = () => {
           </p>
 
           <div className="flex flex-col sm:flex-row gap-4 mb-12">
-            <RacingButton variant="racing" size="xl" className="gap-2">
-              <Trophy className="h-5 w-5" />
-              Make Predictions
+            <RacingButton variant="racing" size="xl" className="gap-2" asChild>
+              <Link to="/create-league">
+                <Trophy className="h-5 w-5" />
+                Create League
+              </Link>
             </RacingButton>
             <RacingButton variant="outline" size="xl" className="gap-2">
               <Users className="h-5 w-5" />
