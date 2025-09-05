@@ -154,14 +154,33 @@ const LeagueManagement = () => {
   };
 
   const sendInviteEmail = async () => {
-    if (!inviteEmail.trim()) return;
+    if (!inviteEmail.trim() || !league || !user) return;
 
-    // This would need an edge function to send emails
-    toast({
-      title: 'Feature Coming Soon',
-      description: 'Email invitations will be available soon!',
-    });
-    setInviteEmail('');
+    try {
+      const { data, error } = await supabase.functions.invoke('send-invite-email', {
+        body: {
+          email: inviteEmail,
+          leagueId: league.id,
+          leagueName: league.name,
+          inviterName: user.email || 'A friend'
+        }
+      });
+
+      if (error) throw error;
+
+      toast({
+        title: 'Invitation Sent!',
+        description: `Invitation email sent to ${inviteEmail}`,
+      });
+      setInviteEmail('');
+    } catch (error) {
+      console.error('Error sending invite:', error);
+      toast({
+        title: 'Error',
+        description: 'Failed to send invitation email',
+        variant: 'destructive',
+      });
+    }
   };
 
   const isOwner = user && league && user.id === league.owner_id;
