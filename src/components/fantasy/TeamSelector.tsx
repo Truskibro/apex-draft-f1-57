@@ -5,6 +5,8 @@ import { Badge } from '@/components/ui/badge';
 import { Crown, Trophy, TrendingUp, Zap, Target, Loader2, GripVertical, Save, Check, X } from 'lucide-react';
 import { useDrivers } from '@/hooks/useDrivers';
 import { useToast } from '@/hooks/use-toast';
+import { useAuth } from '@/hooks/useAuth';
+import { supabase } from '@/integrations/supabase/client';
 
 // F1 Championship scoring system
 const championshipPoints = [25, 18, 15, 12, 10, 8, 6, 4, 2, 1];
@@ -12,6 +14,7 @@ const championshipPoints = [25, 18, 15, 12, 10, 8, 6, 4, 2, 1];
 const RacePrediction = () => {
   const { drivers, loading } = useDrivers();
   const { toast } = useToast();
+  const { user } = useAuth();
   const [predictions, setPredictions] = useState<string[]>([]);
   const [fastestLapPrediction, setFastestLapPrediction] = useState<string>('');
   const [dnfPrediction, setDnfPrediction] = useState<string>('');
@@ -96,29 +99,93 @@ const RacePrediction = () => {
     setIsSaved(false);
   };
 
-  const handleSavePredictions = () => {
+  const handleSavePredictions = async () => {
+    if (!user) {
+      toast({
+        title: "Please sign in",
+        description: "You need to be signed in to save predictions",
+        variant: "destructive"
+      });
+      return;
+    }
+
     console.log('💾 Saving predictions:', predictions);
-    console.log('⚡ Saving fastest lap:', fastestLapPrediction);
-    console.log('❌ Saving DNF:', dnfPrediction);
     
-    // Force save to localStorage
-    localStorage.setItem('f1-predictions', JSON.stringify(predictions));
-    if (fastestLapPrediction) {
+    try {
+      // Get the current race (for now, just use the first race as a placeholder)
+      const { data: races } = await supabase
+        .from('races')
+        .select('id')
+        .eq('status', 'upcoming')
+        .order('race_date', { ascending: true })
+        .limit(1);
+
+      if (!races || races.length === 0) {
+        toast({
+          title: "No upcoming races",
+          description: "There are no upcoming races to make predictions for",
+          variant: "destructive"
+        });
+        return;
+      }
+
+      const raceId = races[0].id;
+      const predictedWinner = predictions.length > 0 ? predictions[0] : null;
+      const predictedPodium = predictions.slice(0, 3); // Top 3 predictions
+
+      // Save or update prediction in database
+      const { data: existingPrediction } = await supabase
+        .from('user_predictions')
+        .select('id')
+        .eq('user_id', user.id)
+        .eq('race_id', raceId)
+        .maybeSingle();
+
+      if (existingPrediction) {
+        // Update existing prediction
+        const { error } = await supabase
+          .from('user_predictions')
+          .update({
+            predicted_winner: predictedWinner,
+            predicted_podium: predictedPodium,
+            updated_at: new Date().toISOString()
+          })
+          .eq('id', existingPrediction.id);
+
+        if (error) throw error;
+      } else {
+        // Create new prediction
+        const { error } = await supabase
+          .from('user_predictions')
+          .insert({
+            user_id: user.id,
+            race_id: raceId,
+            predicted_winner: predictedWinner,
+            predicted_podium: predictedPodium,
+            points_earned: 0 // Will be calculated when race completes
+          });
+
+        if (error) throw error;
+      }
+
+      // Also save to localStorage as backup
+      localStorage.setItem('f1-predictions', JSON.stringify(predictions));
       localStorage.setItem('f1-fastest-lap', fastestLapPrediction);
-    }
-    if (dnfPrediction) {
       localStorage.setItem('f1-dnf', dnfPrediction);
+      
+      setIsSaved(true);
+      toast({
+        title: "Predictions Saved!",
+        description: `Saved ${predictions.length} predictions to your account`,
+      });
+    } catch (error) {
+      console.error('Error saving predictions:', error);
+      toast({
+        title: "Error saving predictions",
+        description: "Failed to save predictions. Please try again.",
+        variant: "destructive"
+      });
     }
-    
-    // Verify save worked
-    const saved = localStorage.getItem('f1-predictions');
-    console.log('✅ Verified saved data:', saved);
-    
-    setIsSaved(true);
-    toast({
-      title: "Predictions Saved!",
-      description: `Saved ${predictions.length} predictions${fastestLapPrediction ? ', fastest lap pick' : ''}${dnfPrediction ? ', and DNF pick' : ''}`,
-    });
   };
 
   const handleDragStart = (e: React.DragEvent, index: number) => {

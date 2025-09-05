@@ -293,6 +293,14 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
+      calculate_prediction_points: {
+        Args: { prediction_id: string; race_id: string }
+        Returns: number
+      }
+      update_user_standings: {
+        Args: { user_id_param: string }
+        Returns: undefined
+      }
       user_can_view_league: {
         Args: { league_id: string }
         Returns: boolean
