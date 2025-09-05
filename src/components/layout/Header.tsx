@@ -1,13 +1,17 @@
 import React from 'react';
 import { Link } from 'react-router-dom';
 import { RacingButton } from '@/components/ui/racing-button';
-import { Flag, Settings, LogOut } from 'lucide-react';
+import { Flag, Settings, LogOut, Trophy } from 'lucide-react';
 import { useAuth } from '@/hooks/useAuth';
 import { useToast } from '@/hooks/use-toast';
+import { useStandings } from '@/hooks/useStandings';
 
 const Header = () => {
   const { user, signOut } = useAuth();
   const { toast } = useToast();
+  const { standings } = useStandings();
+  
+  const currentUserPoints = standings.find(s => s.isCurrentUser)?.total_points || 0;
 
   const handleSignOut = async () => {
     try {
@@ -44,6 +48,14 @@ const Header = () => {
               <div className="hidden sm:flex items-center gap-2 px-3 py-1 bg-muted rounded-lg">
                 <span className="text-xs text-muted-foreground">Signed in as:</span>
                 <span className="text-sm font-medium">{user.email}</span>
+              </div>
+              
+              <div className="flex items-center gap-2 px-3 py-1 bg-primary/10 rounded-lg border border-primary/20">
+                <Trophy className="h-4 w-4 text-primary" />
+                <div className="flex flex-col">
+                  <span className="text-xs text-muted-foreground">Season Points</span>
+                  <span className="text-sm font-bold text-primary">{currentUserPoints}</span>
+                </div>
               </div>
               
               <RacingButton variant="metallic" size="sm">
