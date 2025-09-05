@@ -78,8 +78,6 @@ const Settings = () => {
           .insert(newProfile);
 
         if (insertError) throw insertError;
-        
-        setProfile(newProfile as UserProfile);
       }
     } catch (error) {
       console.error('Error fetching profile:', error);
