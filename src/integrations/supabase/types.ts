@@ -290,7 +290,14 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
-      [_ in never]: never
+      user_can_view_league: {
+        Args: { league_id: string }
+        Returns: boolean
+      }
+      user_is_league_owner: {
+        Args: { league_id: string }
+        Returns: boolean
+      }
     }
     Enums: {
       race_status: "upcoming" | "live" | "completed"
