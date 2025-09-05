@@ -296,6 +296,34 @@ const LeagueManagement = () => {
                 </div>
                 <Separator />
                 <div className="space-y-2">
+                  <Label>League ID</Label>
+                  <div className="flex gap-2">
+                    <Input
+                      value={leagueId || ''}
+                      readOnly
+                      className="flex-1 bg-muted font-mono text-sm"
+                    />
+                    <RacingButton 
+                      variant="outline" 
+                      onClick={() => {
+                        if (leagueId) {
+                          navigator.clipboard.writeText(leagueId);
+                          toast({
+                            title: 'Copied!',
+                            description: 'League ID copied to clipboard.',
+                          });
+                        }
+                      }}
+                    >
+                      <Copy className="h-4 w-4" />
+                    </RacingButton>
+                  </div>
+                  <p className="text-xs text-muted-foreground">
+                    Share this ID with others so they can join your league
+                  </p>
+                </div>
+                <Separator />
+                <div className="space-y-2">
                   <Label htmlFor="invite-email">Invite by Email</Label>
                   <div className="flex gap-2">
                     <Input
