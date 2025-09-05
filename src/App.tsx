@@ -9,6 +9,7 @@ import Index from "./pages/Index";
 import Auth from "./pages/Auth";
 import RaceResults from "./pages/RaceResults";
 import CreateLeague from "./pages/CreateLeague";
+import LeagueManagement from "./pages/LeagueManagement";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
@@ -25,6 +26,7 @@ const App = () => (
             <Route path="/auth" element={<Auth />} />
             <Route path="/race-results/:raceId" element={<RaceResults />} />
             <Route path="/create-league" element={<CreateLeague />} />
+            <Route path="/league/:leagueId" element={<LeagueManagement />} />
             {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
             <Route path="*" element={<NotFound />} />
           </Routes>

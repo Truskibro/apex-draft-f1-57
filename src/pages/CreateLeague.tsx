@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { Link } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
 import Header from '@/components/layout/Header';
 import { RacingButton } from '@/components/ui/racing-button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
@@ -7,22 +7,86 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
 import { Textarea } from '@/components/ui/textarea';
+import { useToast } from '@/hooks/use-toast';
+import { useAuth } from '@/hooks/useAuth';
+import { supabase } from '@/integrations/supabase/client';
 import { ArrowLeft, Trophy, Users, Lock, Globe } from 'lucide-react';
 
 const CreateLeague = () => {
+  const navigate = useNavigate();
+  const { user } = useAuth();
+  const { toast } = useToast();
+  
   const [leagueName, setLeagueName] = useState('');
   const [description, setDescription] = useState('');
   const [visibility, setVisibility] = useState('public');
   const [userRole, setUserRole] = useState('owner');
+  const [creating, setCreating] = useState(false);
 
-  const handleCreateLeague = () => {
-    // TODO: Implement league creation logic
-    console.log({
-      leagueName,
-      description,
-      visibility,
-      userRole
-    });
+  const handleCreateLeague = async () => {
+    if (!user) {
+      toast({
+        title: 'Authentication Required',
+        description: 'Please sign in to create a league',
+        variant: 'destructive',
+      });
+      return;
+    }
+
+    if (!leagueName.trim()) {
+      toast({
+        title: 'League Name Required',
+        description: 'Please enter a name for your league',
+        variant: 'destructive',
+      });
+      return;
+    }
+
+    setCreating(true);
+
+    try {
+      // Create the league
+      const { data: league, error: leagueError } = await supabase
+        .from('leagues')
+        .insert({
+          name: leagueName.trim(),
+          description: description.trim() || null,
+          visibility,
+          owner_id: user.id,
+        })
+        .select()
+        .single();
+
+      if (leagueError) throw leagueError;
+
+      // Add the creator as a member with the selected role
+      const { error: memberError } = await supabase
+        .from('league_members')
+        .insert({
+          league_id: league.id,
+          user_id: user.id,
+          role: userRole,
+        });
+
+      if (memberError) throw memberError;
+
+      toast({
+        title: 'League Created!',
+        description: 'Your league has been successfully created',
+      });
+
+      // Navigate to the league management page
+      navigate(`/league/${league.id}`);
+    } catch (error) {
+      console.error('Error creating league:', error);
+      toast({
+        title: 'Error',
+        description: 'Failed to create league. Please try again.',
+        variant: 'destructive',
+      });
+    } finally {
+      setCreating(false);
+    }
   };
 
   return (
@@ -163,10 +227,10 @@ const CreateLeague = () => {
               variant="racing" 
               size="lg" 
               onClick={handleCreateLeague}
-              disabled={!leagueName.trim()}
+              disabled={!leagueName.trim() || creating}
               className="flex-1"
             >
-              Create League
+              {creating ? 'Creating...' : 'Create League'}
             </RacingButton>
             <RacingButton variant="outline" size="lg" asChild>
               <Link to="/">Cancel</Link>
