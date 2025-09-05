@@ -40,6 +40,15 @@ const Header = () => {
               <span className="text-xs text-muted-foreground -mt-1">League</span>
             </div>
           </Link>
+          
+          {user && (
+            <RacingButton variant="ghost" size="sm" asChild>
+              <Link to="/my-leagues" className="flex items-center gap-2">
+                <Trophy className="h-4 w-4" />
+                <span className="hidden sm:inline">My Leagues</span>
+              </Link>
+            </RacingButton>
+          )}
         </div>
 
         <div className="flex items-center gap-3">
