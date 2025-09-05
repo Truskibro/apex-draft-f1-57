@@ -3,6 +3,7 @@ import { Link } from 'react-router-dom';
 import { RacingButton } from '@/components/ui/racing-button';
 import { Trophy, Zap, Users } from 'lucide-react';
 import heroImage from '@/assets/f1-hero.jpg';
+import JoinLeagueDialog from '@/components/fantasy/JoinLeagueDialog';
 
 const HeroSection = () => {
   return (
@@ -46,10 +47,12 @@ const HeroSection = () => {
                 Create League
               </Link>
             </RacingButton>
-            <RacingButton variant="outline" size="xl" className="gap-2">
-              <Users className="h-5 w-5" />
-              Join League
-            </RacingButton>
+            <JoinLeagueDialog>
+              <RacingButton variant="outline" size="xl" className="gap-2">
+                <Users className="h-5 w-5" />
+                Join League
+              </RacingButton>
+            </JoinLeagueDialog>
           </div>
 
           {/* Quick Stats */}
