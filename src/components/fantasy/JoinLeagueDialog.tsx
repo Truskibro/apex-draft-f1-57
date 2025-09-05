@@ -20,6 +20,19 @@ const JoinLeagueDialog = ({ children, onLeagueJoined }: JoinLeagueDialogProps) =
   const [leagueId, setLeagueId] = useState('');
   const [loading, setLoading] = useState(false);
 
+  // Check authentication when opening dialog
+  const handleDialogOpen = (newOpen: boolean) => {
+    if (newOpen && !user) {
+      toast({
+        title: 'Authentication Required',
+        description: 'Please sign in to join a league',
+        variant: 'destructive',
+      });
+      return;
+    }
+    setOpen(newOpen);
+  };
+
   const joinLeague = async () => {
     if (!user || !leagueId.trim()) {
       toast({
@@ -101,7 +114,7 @@ const JoinLeagueDialog = ({ children, onLeagueJoined }: JoinLeagueDialogProps) =
   };
 
   return (
-    <Dialog open={open} onOpenChange={setOpen}>
+    <Dialog open={open} onOpenChange={handleDialogOpen}>
       <DialogTrigger asChild>
         {children}
       </DialogTrigger>

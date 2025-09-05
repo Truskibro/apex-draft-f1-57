@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import Header from '@/components/layout/Header';
 import { RacingButton } from '@/components/ui/racing-button';
@@ -22,6 +22,13 @@ const CreateLeague = () => {
   const [visibility, setVisibility] = useState('public');
   const [userRole, setUserRole] = useState('owner');
   const [creating, setCreating] = useState(false);
+
+  // Redirect to auth if not authenticated
+  useEffect(() => {
+    if (!user) {
+      navigate('/auth');
+    }
+  }, [user, navigate]);
 
   const handleCreateLeague = async () => {
     if (!user) {

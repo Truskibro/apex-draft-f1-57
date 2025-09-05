@@ -4,8 +4,10 @@ import { RacingButton } from '@/components/ui/racing-button';
 import { Trophy, Zap, Users } from 'lucide-react';
 import heroImage from '@/assets/f1-hero.jpg';
 import JoinLeagueDialog from '@/components/fantasy/JoinLeagueDialog';
+import { useAuth } from '@/hooks/useAuth';
 
 const HeroSection = () => {
+  const { user } = useAuth();
   return (
     <section className="relative overflow-hidden">
       {/* Background Image */}
@@ -41,18 +43,37 @@ const HeroSection = () => {
           </p>
 
           <div className="flex flex-col sm:flex-row gap-4 mb-12">
-            <RacingButton variant="racing" size="xl" className="gap-2" asChild>
-              <Link to="/create-league">
-                <Trophy className="h-5 w-5" />
-                Create League
-              </Link>
-            </RacingButton>
-            <JoinLeagueDialog>
-              <RacingButton variant="outline" size="xl" className="gap-2">
-                <Users className="h-5 w-5" />
-                Join League
+            {user ? (
+              <RacingButton variant="racing" size="xl" className="gap-2" asChild>
+                <Link to="/create-league">
+                  <Trophy className="h-5 w-5" />
+                  Create League
+                </Link>
               </RacingButton>
-            </JoinLeagueDialog>
+            ) : (
+              <RacingButton variant="racing" size="xl" className="gap-2" asChild>
+                <Link to="/auth">
+                  <Trophy className="h-5 w-5" />
+                  Create League
+                </Link>
+              </RacingButton>
+            )}
+            
+            {user ? (
+              <JoinLeagueDialog>
+                <RacingButton variant="outline" size="xl" className="gap-2">
+                  <Users className="h-5 w-5" />
+                  Join League
+                </RacingButton>
+              </JoinLeagueDialog>
+            ) : (
+              <RacingButton variant="outline" size="xl" className="gap-2" asChild>
+                <Link to="/auth">
+                  <Users className="h-5 w-5" />
+                  Join League
+                </Link>
+              </RacingButton>
+            )}
           </div>
 
           {/* Quick Stats */}
