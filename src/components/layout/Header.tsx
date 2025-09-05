@@ -67,8 +67,10 @@ const Header = () => {
                 </div>
               </div>
               
-              <RacingButton variant="metallic" size="sm">
-                <Settings className="h-4 w-4" />
+              <RacingButton variant="metallic" size="sm" asChild>
+                <Link to="/settings">
+                  <Settings className="h-4 w-4" />
+                </Link>
               </RacingButton>
               
               <RacingButton variant="outline" size="sm" onClick={handleSignOut}>
