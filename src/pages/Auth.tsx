@@ -11,12 +11,20 @@ import * as z from 'zod';
 import { useToast } from '@/hooks/use-toast';
 import { Loader2, ArrowLeft } from 'lucide-react';
 
-const authSchema = z.object({
+const loginSchema = z.object({
   email: z.string().email('Please enter a valid email address'),
   password: z.string().min(6, 'Password must be at least 6 characters'),
 });
 
-type AuthFormData = z.infer<typeof authSchema>;
+const signupSchema = z.object({
+  email: z.string().email('Please enter a valid email address'),
+  password: z.string().min(6, 'Password must be at least 6 characters'),
+  username: z.string().min(2, 'Username must be at least 2 characters').max(30, 'Username must be less than 30 characters'),
+  teamName: z.string().min(2, 'Team name must be at least 2 characters').max(50, 'Team name must be less than 50 characters'),
+});
+
+type LoginFormData = z.infer<typeof loginSchema>;
+type SignupFormData = z.infer<typeof signupSchema>;
 
 const Auth = () => {
   const [isLogin, setIsLogin] = useState(true);
@@ -24,13 +32,25 @@ const Auth = () => {
   const navigate = useNavigate();
   const { toast } = useToast();
 
-  const form = useForm<AuthFormData>({
-    resolver: zodResolver(authSchema),
+  const loginForm = useForm<LoginFormData>({
+    resolver: zodResolver(loginSchema),
     defaultValues: {
       email: '',
       password: '',
     },
   });
+
+  const signupForm = useForm<SignupFormData>({
+    resolver: zodResolver(signupSchema),
+    defaultValues: {
+      email: '',
+      password: '',
+      username: '',
+      teamName: '',
+    },
+  });
+
+  const currentForm = isLogin ? loginForm : signupForm;
 
   useEffect(() => {
     // Check if user is already authenticated
@@ -52,14 +72,15 @@ const Auth = () => {
     return () => subscription.unsubscribe();
   }, [navigate]);
 
-  const onSubmit = async (values: AuthFormData) => {
+  const onSubmit = async (values: LoginFormData | SignupFormData) => {
     setIsLoading(true);
     
     try {
       if (isLogin) {
+        const loginValues = values as LoginFormData;
         const { error } = await supabase.auth.signInWithPassword({
-          email: values.email,
-          password: values.password,
+          email: loginValues.email,
+          password: loginValues.password,
         });
 
         if (error) {
@@ -84,13 +105,18 @@ const Auth = () => {
           description: 'You have successfully logged in.',
         });
       } else {
+        const signupValues = values as SignupFormData;
         const redirectUrl = `${window.location.origin}/`;
         
         const { error } = await supabase.auth.signUp({
-          email: values.email,
-          password: values.password,
+          email: signupValues.email,
+          password: signupValues.password,
           options: {
-            emailRedirectTo: redirectUrl
+            emailRedirectTo: redirectUrl,
+            data: {
+              username: signupValues.username,
+              team_name: signupValues.teamName,
+            }
           }
         });
 
@@ -153,10 +179,50 @@ const Auth = () => {
             </CardDescription>
           </CardHeader>
           <CardContent>
-            <Form {...form}>
-              <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
+            <Form {...currentForm}>
+              <form onSubmit={currentForm.handleSubmit(onSubmit)} className="space-y-4">
+                {!isLogin && (
+                  <>
+                    <FormField
+                      control={signupForm.control}
+                      name="username"
+                      render={({ field }) => (
+                        <FormItem>
+                          <FormLabel>Username</FormLabel>
+                          <FormControl>
+                            <Input
+                              type="text"
+                              placeholder="Choose your username"
+                              disabled={isLoading}
+                              {...field}
+                            />
+                          </FormControl>
+                          <FormMessage />
+                        </FormItem>
+                      )}
+                    />
+                    <FormField
+                      control={signupForm.control}
+                      name="teamName"
+                      render={({ field }) => (
+                        <FormItem>
+                          <FormLabel>Team Name</FormLabel>
+                          <FormControl>
+                            <Input
+                              type="text"
+                              placeholder="Enter your team name"
+                              disabled={isLoading}
+                              {...field}
+                            />
+                          </FormControl>
+                          <FormMessage />
+                        </FormItem>
+                      )}
+                    />
+                  </>
+                )}
                 <FormField
-                  control={form.control}
+                  control={currentForm.control}
                   name="email"
                   render={({ field }) => (
                     <FormItem>
@@ -174,7 +240,7 @@ const Auth = () => {
                   )}
                 />
                 <FormField
-                  control={form.control}
+                  control={currentForm.control}
                   name="password"
                   render={({ field }) => (
                     <FormItem>
@@ -210,7 +276,8 @@ const Auth = () => {
                 variant="link"
                 onClick={() => {
                   setIsLogin(!isLogin);
-                  form.reset();
+                  loginForm.reset();
+                  signupForm.reset();
                 }}
                 disabled={isLoading}
                 className="text-primary hover:text-primary/80"
