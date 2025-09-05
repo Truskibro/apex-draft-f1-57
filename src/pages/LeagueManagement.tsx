@@ -10,6 +10,7 @@ import { Badge } from '@/components/ui/badge';
 import { Separator } from '@/components/ui/separator';
 import { useToast } from '@/hooks/use-toast';
 import { useAuth } from '@/hooks/useAuth';
+import { useStandings } from '@/hooks/useStandings';
 import { supabase } from '@/integrations/supabase/client';
 import { 
   ArrowLeft, 
@@ -49,6 +50,7 @@ const LeagueManagement = () => {
   const { user } = useAuth();
   const { toast } = useToast();
   const navigate = useNavigate();
+  const { standings } = useStandings();
   
   const [league, setLeague] = useState<League | null>(null);
   const [members, setMembers] = useState<LeagueMember[]>([]);
@@ -181,6 +183,11 @@ const LeagueManagement = () => {
         variant: 'destructive',
       });
     }
+  };
+
+  const getUserSeasonPoints = (userId: string) => {
+    const userStanding = standings.find(s => s.user_id === userId);
+    return userStanding?.total_points || 0;
   };
 
   const isOwner = user && league && user.id === league.owner_id;
@@ -392,9 +399,17 @@ const LeagueManagement = () => {
                         </div>
                       </div>
                     </div>
-                    <Badge variant={member.role === 'owner' ? 'default' : 'secondary'}>
-                      {member.role}
-                    </Badge>
+                    <div className="flex items-center gap-3">
+                      <div className="text-right">
+                        <div className="text-lg font-bold text-primary">
+                          {getUserSeasonPoints(member.user_id)}
+                        </div>
+                        <div className="text-xs text-muted-foreground">Season Points</div>
+                      </div>
+                      <Badge variant={member.role === 'owner' ? 'default' : 'secondary'}>
+                        {member.role}
+                      </Badge>
+                    </div>
                   </div>
                 ))}
               </div>
