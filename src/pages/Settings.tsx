@@ -25,7 +25,7 @@ interface UserProfile {
   id: string;
   display_name: string | null;
   team_name: string;
-  bio: string | null;
+  bio?: string | null;
   created_at: string;
   updated_at: string;
 }
@@ -56,7 +56,7 @@ const Settings = () => {
     try {
       const { data, error } = await supabase
         .from('profiles')
-        .select('*')
+        .select('id, display_name, team_name, bio, created_at, updated_at')
         .eq('id', user.id)
         .maybeSingle();
 
@@ -66,7 +66,7 @@ const Settings = () => {
         setProfile(data);
         setDisplayName(data.display_name || '');
         setTeamName(data.team_name || '');
-        setBio(data.bio || '');
+        setBio((data as any).bio || '');
       } else {
         // Create a new profile if none exists
         const newProfile = {
@@ -334,7 +334,7 @@ const Settings = () => {
               <Separator />
               <div className="flex justify-end">
                 <RacingButton 
-                  variant="destructive" 
+                  variant="outline" 
                   onClick={handleSignOut}
                 >
                   Sign Out
