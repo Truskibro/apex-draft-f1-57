@@ -20,7 +20,6 @@ const signupSchema = z.object({
   email: z.string().email('Please enter a valid email address'),
   password: z.string().min(6, 'Password must be at least 6 characters'),
   username: z.string().min(2, 'Username must be at least 2 characters').max(30, 'Username must be less than 30 characters'),
-  teamName: z.string().min(2, 'Team name must be at least 2 characters').max(50, 'Team name must be less than 50 characters'),
 });
 
 type LoginFormData = z.infer<typeof loginSchema>;
@@ -46,7 +45,6 @@ const Auth = () => {
       email: '',
       password: '',
       username: '',
-      teamName: '',
     },
   });
 
@@ -111,13 +109,12 @@ const Auth = () => {
         const { error } = await supabase.auth.signUp({
           email: signupValues.email,
           password: signupValues.password,
-          options: {
-            emailRedirectTo: redirectUrl,
-            data: {
-              username: signupValues.username,
-              team_name: signupValues.teamName,
+            options: {
+              emailRedirectTo: redirectUrl,
+              data: {
+                username: signupValues.username,
+              }
             }
-          }
         });
 
         if (error) {
@@ -193,24 +190,6 @@ const Auth = () => {
                             <Input
                               type="text"
                               placeholder="Choose your username"
-                              disabled={isLoading}
-                              {...field}
-                            />
-                          </FormControl>
-                          <FormMessage />
-                        </FormItem>
-                      )}
-                    />
-                    <FormField
-                      control={signupForm.control}
-                      name="teamName"
-                      render={({ field }) => (
-                        <FormItem>
-                          <FormLabel>Team Name</FormLabel>
-                          <FormControl>
-                            <Input
-                              type="text"
-                              placeholder="Enter your team name"
                               disabled={isLoading}
                               {...field}
                             />

@@ -24,7 +24,6 @@ import {
 interface UserProfile {
   id: string;
   display_name: string | null;
-  team_name: string;
   bio?: string | null;
   created_at: string;
   updated_at: string;
@@ -39,7 +38,6 @@ const Settings = () => {
   
   // Form state
   const [displayName, setDisplayName] = useState('');
-  const [teamName, setTeamName] = useState('');
   const [bio, setBio] = useState('');
   const [emailNotifications, setEmailNotifications] = useState(true);
   const [weeklyDigest, setWeeklyDigest] = useState(true);
@@ -56,7 +54,7 @@ const Settings = () => {
     try {
       const { data, error } = await supabase
         .from('profiles')
-        .select('id, display_name, team_name, bio, created_at, updated_at')
+        .select('id, display_name, bio, created_at, updated_at')
         .eq('id', user.id)
         .maybeSingle();
 
@@ -65,14 +63,12 @@ const Settings = () => {
       if (data) {
         setProfile(data);
         setDisplayName(data.display_name || '');
-        setTeamName(data.team_name || '');
         setBio((data as any).bio || '');
       } else {
         // Create a new profile if none exists
         const newProfile = {
           id: user.id,
           display_name: null,
-          team_name: 'My Racing Team',
           bio: null,
         };
         
@@ -83,7 +79,6 @@ const Settings = () => {
         if (insertError) throw insertError;
         
         setProfile(newProfile as UserProfile);
-        setTeamName('My Racing Team');
       }
     } catch (error) {
       console.error('Error fetching profile:', error);
@@ -106,7 +101,6 @@ const Settings = () => {
         .from('profiles')
         .update({
           display_name: displayName.trim() || null,
-          team_name: teamName.trim() || 'My Racing Team',
           bio: bio.trim() || null,
         })
         .eq('id', user.id);
@@ -116,7 +110,6 @@ const Settings = () => {
       setProfile({
         ...profile,
         display_name: displayName.trim() || null,
-        team_name: teamName.trim() || 'My Racing Team',
         bio: bio.trim() || null,
       });
 
@@ -216,31 +209,17 @@ const Settings = () => {
               </CardDescription>
             </CardHeader>
             <CardContent className="space-y-4">
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                <div className="space-y-2">
-                  <Label htmlFor="display-name">Display Name (Username)</Label>
-                  <Input
-                    id="display-name"
-                    placeholder="Enter your display name"
-                    value={displayName}
-                    onChange={(e) => setDisplayName(e.target.value)}
-                  />
-                  <p className="text-xs text-muted-foreground">
-                    This is how other users will see your name
-                  </p>
-                </div>
-                <div className="space-y-2">
-                  <Label htmlFor="team-name">Team Name</Label>
-                  <Input
-                    id="team-name"
-                    placeholder="Enter your team name"
-                    value={teamName}
-                    onChange={(e) => setTeamName(e.target.value)}
-                  />
-                  <p className="text-xs text-muted-foreground">
-                    Your fantasy team name
-                  </p>
-                </div>
+              <div className="space-y-2">
+                <Label htmlFor="display-name">Display Name (Username)</Label>
+                <Input
+                  id="display-name"
+                  placeholder="Enter your display name"
+                  value={displayName}
+                  onChange={(e) => setDisplayName(e.target.value)}
+                />
+                <p className="text-xs text-muted-foreground">
+                  This is how other users will see your name
+                </p>
               </div>
               <div className="space-y-2">
                 <Label htmlFor="bio">Bio</Label>
