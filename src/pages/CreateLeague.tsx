@@ -144,17 +144,6 @@ const CreateLeague = () => {
                   </div>
                 </div>
                 <div className="flex items-center space-x-2 p-4 border rounded-lg">
-                  <RadioGroupItem value="admin" id="admin" />
-                  <div className="flex-1">
-                    <Label htmlFor="admin" className="font-medium cursor-pointer">
-                      Admin
-                    </Label>
-                    <p className="text-sm text-muted-foreground mt-1">
-                      Can manage league settings and moderate members
-                    </p>
-                  </div>
-                </div>
-                <div className="flex items-center space-x-2 p-4 border rounded-lg">
                   <RadioGroupItem value="member" id="member" />
                   <div className="flex-1">
                     <Label htmlFor="member" className="font-medium cursor-pointer">
