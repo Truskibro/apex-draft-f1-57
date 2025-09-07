@@ -18,8 +18,10 @@ import {
   Shield, 
   Palette,
   Save,
-  Mail
+  Mail,
+  History
 } from 'lucide-react';
+import { PredictionHistory } from '@/components/fantasy/PredictionHistory';
 
 interface UserProfile {
   id: string;
@@ -318,6 +320,22 @@ const Settings = () => {
                   Sign Out
                 </RacingButton>
               </div>
+            </CardContent>
+          </Card>
+
+          {/* Prediction History */}
+          <Card>
+            <CardHeader>
+              <CardTitle className="flex items-center gap-2">
+                <History className="h-5 w-5 text-primary" />
+                Prediction History
+              </CardTitle>
+              <CardDescription>
+                View your past predictions and see how well you've performed
+              </CardDescription>
+            </CardHeader>
+            <CardContent>
+              <PredictionHistory />
             </CardContent>
           </Card>
 
