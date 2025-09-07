@@ -136,7 +136,7 @@ const Leaderboard = () => {
                         </div>
                         
                         <h4 className="font-bold text-sm mb-1">
-                          {player.profile?.display_name || 'Anonymous'}
+                          {player.profile?.username || 'Racing Driver'}
                         </h4>
                         <div className="text-lg font-bold text-primary">{player.total_points}</div>
                         <div className="text-xs text-muted-foreground">pts</div>
@@ -163,11 +163,11 @@ const Leaderboard = () => {
                         
                         <div>
                           <div className="font-semibold text-xs flex items-center gap-1">
-                            {player.profile?.display_name || 'Anonymous'}
+                            {player.profile?.username || 'Racing Driver'}
                             {player.isCurrentUser && <Badge variant="secondary" className="text-xs px-1 py-0">You</Badge>}
                           </div>
                           <div className="text-xs text-muted-foreground">
-                            {player.profile?.username || 'Racing Driver'}
+                            {player.profile?.display_name || 'No display name'}
                           </div>
                         </div>
                       </div>
