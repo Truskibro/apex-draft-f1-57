@@ -185,10 +185,10 @@ const Settings = () => {
             <CardContent className="space-y-4">
               
               <div className="space-y-2">
-                <Label htmlFor="display-name">Display Name</Label>
-                <Input id="display-name" placeholder="Enter your display name (optional)" value={displayName} onChange={e => setDisplayName(e.target.value)} />
+                <Label htmlFor="username">Username</Label>
+                <Input id="username" placeholder="Enter your username" value={username} onChange={e => setUsername(e.target.value)} />
                 <p className="text-xs text-muted-foreground">
-                  Optional display name for a more personal touch
+                  Your username for leagues and competitions
                 </p>
               </div>
               <div className="space-y-2">
