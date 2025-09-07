@@ -11,7 +11,7 @@ export type Standing = {
   rank: number;
   previous_rank?: number;
   profile?: {
-    team_name: string;
+    username: string;
     display_name?: string;
   };
   isCurrentUser?: boolean;
@@ -50,7 +50,7 @@ export const useStandings = () => {
         const userIds = standingsData.map(s => s.user_id);
         const { data: profilesData } = await supabase
           .from('profiles')
-          .select('id, display_name, team_name')
+          .select('id, display_name, username')
           .in('id', userIds);
 
         // Combine standings with profile data
@@ -59,10 +59,10 @@ export const useStandings = () => {
           return {
             ...standing,
             profile: profile ? {
-              team_name: profile.team_name || 'No Team',
+              username: profile.username || 'Racing Driver',
               display_name: profile.display_name || 'Anonymous User'
             } : {
-              team_name: 'No Team',
+              username: 'Racing Driver',
               display_name: 'Anonymous User'
             },
             isCurrentUser: standing.user_id === user?.id

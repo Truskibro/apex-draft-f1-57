@@ -45,7 +45,7 @@ const Leaderboard = () => {
   // Group standings by team for league view
   const getLeagueStandings = () => {
     const teamStandings = standings.reduce((acc, player) => {
-      const teamName = player.profile?.team_name || 'No Team';
+      const teamName = player.profile?.username || 'Racing Driver';
       if (!acc[teamName]) {
         acc[teamName] = {
           teamName,
@@ -167,7 +167,7 @@ const Leaderboard = () => {
                             {player.isCurrentUser && <Badge variant="secondary" className="text-xs px-1 py-0">You</Badge>}
                           </div>
                           <div className="text-xs text-muted-foreground">
-                            {player.profile?.team_name || 'No Team'}
+                            {player.profile?.username || 'Racing Driver'}
                           </div>
                         </div>
                       </div>

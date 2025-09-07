@@ -72,7 +72,7 @@ const Settings = () => {
           id: user.id,
           display_name: null,
           bio: null,
-          team_name: 'Racing Team', // Default team name
+          username: 'Racing Driver', // Default username
         };
         
         const { error: insertError } = await supabase
@@ -211,10 +211,10 @@ const Settings = () => {
             </CardHeader>
             <CardContent className="space-y-4">
               <div className="space-y-2">
-                <Label htmlFor="display-name">Display Name (Username)</Label>
+                <Label htmlFor="display-name">Username</Label>
                 <Input
                   id="display-name"
-                  placeholder="Enter your display name"
+                  placeholder="Enter your username"
                   value={displayName}
                   onChange={(e) => setDisplayName(e.target.value)}
                 />
