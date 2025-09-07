@@ -21,26 +21,57 @@ const RacePrediction = () => {
   const [availableDrivers, setAvailableDrivers] = useState<string[]>([]);
   const [draggedIndex, setDraggedIndex] = useState<number | null>(null);
   const [isSaved, setIsSaved] = useState(true);
+  const [hasUpcomingRaces, setHasUpcomingRaces] = useState(true);
 
   // Update available drivers when drivers data loads
   React.useEffect(() => {
     console.log('🔄 Effect running, drivers.length:', drivers.length);
-    if (drivers.length > 0) {
-      // Load saved predictions from localStorage
-      const savedPredictions = localStorage.getItem('f1-predictions');
-      const savedFastestLap = localStorage.getItem('f1-fastest-lap');
-      const savedDnf = localStorage.getItem('f1-dnf');
-      
-      console.log('💾 localStorage data:', { savedPredictions, savedFastestLap, savedDnf });
-      
-      if (savedPredictions) {
-        const parsedPredictions = JSON.parse(savedPredictions);
-        console.log('📋 Parsed predictions:', parsedPredictions);
-        // Validate that all saved driver IDs still exist
-        const validPredictions = parsedPredictions.filter((id: string) => 
+    if (drivers.length > 0 && user) {
+      loadPredictionsFromDatabase();
+    } else if (drivers.length > 0) {
+      // Load from localStorage if not logged in
+      loadPredictionsFromLocalStorage();
+    }
+  }, [drivers, user]);
+
+  const loadPredictionsFromDatabase = async () => {
+    try {
+      // Get the next upcoming race
+      const { data: upcomingRaces } = await supabase
+        .from('races')
+        .select('id, name, status')
+        .eq('status', 'upcoming')
+        .order('race_date', { ascending: true })
+        .limit(1);
+
+      if (!upcomingRaces || upcomingRaces.length === 0) {
+        console.log('🚫 No upcoming races found');
+        // Clear any saved predictions since there are no upcoming races
+        setPredictions([]);
+        setAvailableDrivers(drivers.map(d => d.id));
+        clearLocalStorage();
+        setHasUpcomingRaces(false);
+        return;
+      }
+
+      setHasUpcomingRaces(true);
+
+      const raceId = upcomingRaces[0].id;
+      console.log('🏁 Loading predictions for upcoming race:', upcomingRaces[0].name);
+
+      // Load existing predictions for this race
+      const { data: existingPrediction } = await supabase
+        .from('user_predictions')
+        .select('predicted_winner, predicted_podium')
+        .eq('user_id', user.id)
+        .eq('race_id', raceId)
+        .maybeSingle();
+
+      if (existingPrediction && existingPrediction.predicted_podium) {
+        console.log('📊 Found existing predictions:', existingPrediction);
+        const validPredictions = existingPrediction.predicted_podium.filter((id: string) => 
           drivers.some(driver => driver.id === id)
         );
-        console.log('✅ Valid predictions:', validPredictions);
         setPredictions(validPredictions);
         
         // Set available drivers (excluding those in predictions)
@@ -48,22 +79,66 @@ const RacePrediction = () => {
           .map(d => d.id)
           .filter(id => !validPredictions.includes(id));
         setAvailableDrivers(remainingDrivers);
+        setIsSaved(true);
       } else {
-        console.log('❌ No saved predictions found');
+        console.log('🆕 No existing predictions, starting fresh');
+        setPredictions([]);
         setAvailableDrivers(drivers.map(d => d.id));
+        setIsSaved(true);
       }
-      
-      if (savedFastestLap && drivers.some(driver => driver.id === savedFastestLap)) {
-        console.log('⚡ Setting fastest lap:', savedFastestLap);
-        setFastestLapPrediction(savedFastestLap);
-      }
-      
-      if (savedDnf && drivers.some(driver => driver.id === savedDnf)) {
-        console.log('❌ Setting DNF:', savedDnf);
-        setDnfPrediction(savedDnf);
-      }
+    } catch (error) {
+      console.error('Error loading predictions from database:', error);
+      // Fallback to localStorage
+      loadPredictionsFromLocalStorage();
     }
-  }, [drivers]);
+  };
+
+  const loadPredictionsFromLocalStorage = () => {
+    // Load saved predictions from localStorage
+    const savedPredictions = localStorage.getItem('f1-predictions');
+    const savedFastestLap = localStorage.getItem('f1-fastest-lap');
+    const savedDnf = localStorage.getItem('f1-dnf');
+    
+    console.log('💾 localStorage data:', { savedPredictions, savedFastestLap, savedDnf });
+    
+    if (savedPredictions) {
+      const parsedPredictions = JSON.parse(savedPredictions);
+      console.log('📋 Parsed predictions:', parsedPredictions);
+      // Validate that all saved driver IDs still exist
+      const validPredictions = parsedPredictions.filter((id: string) => 
+        drivers.some(driver => driver.id === id)
+      );
+      console.log('✅ Valid predictions:', validPredictions);
+      setPredictions(validPredictions);
+      
+      // Set available drivers (excluding those in predictions)
+      const remainingDrivers = drivers
+        .map(d => d.id)
+        .filter(id => !validPredictions.includes(id));
+      setAvailableDrivers(remainingDrivers);
+    } else {
+      console.log('❌ No saved predictions found');
+      setAvailableDrivers(drivers.map(d => d.id));
+    }
+    
+    if (savedFastestLap && drivers.some(driver => driver.id === savedFastestLap)) {
+      console.log('⚡ Setting fastest lap:', savedFastestLap);
+      setFastestLapPrediction(savedFastestLap);
+    }
+    
+    if (savedDnf && drivers.some(driver => driver.id === savedDnf)) {
+      console.log('❌ Setting DNF:', savedDnf);
+      setDnfPrediction(savedDnf);
+    }
+  };
+
+  const clearLocalStorage = () => {
+    localStorage.removeItem('f1-predictions');
+    localStorage.removeItem('f1-fastest-lap');
+    localStorage.removeItem('f1-dnf');
+    setFastestLapPrediction('');
+    setDnfPrediction('');
+  };
 
 
   const addToPrediction = (driverId: string) => {
@@ -254,9 +329,15 @@ const RacePrediction = () => {
         <div className="max-w-6xl mx-auto">
           <div className="text-center mb-12">
             <h2 className="text-4xl font-bold mb-4">Predict Finishing Order</h2>
-            <p className="text-xl text-muted-foreground mb-6">
-              Predict the top 10 finishing positions for the upcoming race
-            </p>
+            {hasUpcomingRaces ? (
+              <p className="text-xl text-muted-foreground mb-6">
+                Predict the top 10 finishing positions for the next upcoming race
+              </p>
+            ) : (
+              <p className="text-xl text-muted-foreground mb-6">
+                No upcoming races found. All predictions have been cleared after race completion.
+              </p>
+            )}
             
             {/* Points Display */}
             <Card className="inline-flex items-center gap-4 p-4 bg-card border-2">
