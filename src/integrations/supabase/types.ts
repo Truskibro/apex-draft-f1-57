@@ -146,12 +146,15 @@ export type Database = {
           country_flag: string
           created_at: string
           current_lap: string | null
+          fastest_lap_driver: string | null
           id: string
           location: string
           name: string
           race_date: string
           race_time: string
+          second_place: string | null
           status: Database["public"]["Enums"]["race_status"]
+          third_place: string | null
           total_laps: number | null
           updated_at: string
           winner: string | null
@@ -160,12 +163,15 @@ export type Database = {
           country_flag: string
           created_at?: string
           current_lap?: string | null
+          fastest_lap_driver?: string | null
           id?: string
           location: string
           name: string
           race_date: string
           race_time: string
+          second_place?: string | null
           status?: Database["public"]["Enums"]["race_status"]
+          third_place?: string | null
           total_laps?: number | null
           updated_at?: string
           winner?: string | null
@@ -174,12 +180,15 @@ export type Database = {
           country_flag?: string
           created_at?: string
           current_lap?: string | null
+          fastest_lap_driver?: string | null
           id?: string
           location?: string
           name?: string
           race_date?: string
           race_time?: string
+          second_place?: string | null
           status?: Database["public"]["Enums"]["race_status"]
+          third_place?: string | null
           total_laps?: number | null
           updated_at?: string
           winner?: string | null

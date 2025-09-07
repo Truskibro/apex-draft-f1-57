@@ -14,6 +14,8 @@ type PredictionResult = {
   races: {
     name: string;
     winner: string;
+    second_place?: string;
+    third_place?: string;
   };
 };
 
@@ -44,7 +46,9 @@ export const PredictionResults = ({ raceId }: PredictionResultsProps) => {
           points_earned,
           races (
             name,
-            winner
+            winner,
+            second_place,
+            third_place
           )
         `)
         .eq('user_id', user?.id)
@@ -141,16 +145,39 @@ export const PredictionResults = ({ raceId }: PredictionResultsProps) => {
           <div className="p-3 rounded-lg border">
             <div className="font-medium mb-2">Podium Predictions</div>
             <div className="space-y-2">
-              {prediction.predicted_podium.slice(0, 3).map((driverId, index) => (
-                <div key={index} className="flex items-center justify-between text-sm">
-                  <span>
-                    P{index + 1}: {getDriverName(driverId)}
-                  </span>
-                  <Badge variant="secondary">
-                    No points (results not verified)
-                  </Badge>
-                </div>
-              ))}
+              {prediction.predicted_podium.slice(0, 3).map((driverId, index) => {
+                const driverName = getDriverName(driverId);
+                const actualPosition = index === 0 ? prediction.races?.winner : 
+                                     index === 1 ? prediction.races?.second_place : 
+                                     index === 2 ? prediction.races?.third_place : null;
+                const isCorrect = driverName === actualPosition;
+                const points = isCorrect ? (index === 0 ? 25 : index === 1 ? 18 : 15) : 0;
+                
+                return (
+                  <div key={index} className="flex items-center justify-between text-sm">
+                    <span>
+                      P{index + 1}: {driverName}
+                    </span>
+                    <div className="flex items-center gap-2">
+                      {isCorrect ? (
+                        <>
+                          <CheckCircle className="h-4 w-4 text-green-500" />
+                          <Badge variant="default" className="bg-green-500">
+                            +{points} pts
+                          </Badge>
+                        </>
+                      ) : (
+                        <>
+                          <XCircle className="h-4 w-4 text-red-500" />
+                          <Badge variant="secondary">
+                            0 pts
+                          </Badge>
+                        </>
+                      )}
+                    </div>
+                  </div>
+                );
+              })}
             </div>
           </div>
         )}
