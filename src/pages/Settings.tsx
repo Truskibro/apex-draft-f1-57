@@ -11,18 +11,8 @@ import { Separator } from '@/components/ui/separator';
 import { useAuth } from '@/hooks/useAuth';
 import { useToast } from '@/hooks/use-toast';
 import { supabase } from '@/integrations/supabase/client';
-import { 
-  ArrowLeft, 
-  User, 
-  Bell, 
-  Shield, 
-  Palette,
-  Save,
-  Mail,
-  History
-} from 'lucide-react';
+import { ArrowLeft, User, Bell, Shield, Palette, Save, Mail, History } from 'lucide-react';
 import { PredictionHistory } from '@/components/fantasy/PredictionHistory';
-
 interface UserProfile {
   id: string;
   display_name: string | null;
@@ -31,39 +21,37 @@ interface UserProfile {
   created_at: string;
   updated_at: string;
 }
-
 const Settings = () => {
-  const { user, signOut } = useAuth();
-  const { toast } = useToast();
+  const {
+    user,
+    signOut
+  } = useAuth();
+  const {
+    toast
+  } = useToast();
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
   const [profile, setProfile] = useState<UserProfile | null>(null);
-  
+
   // Form state
   const [displayName, setDisplayName] = useState('');
   const [username, setUsername] = useState('');
   const [bio, setBio] = useState('');
   const [emailNotifications, setEmailNotifications] = useState(true);
   const [weeklyDigest, setWeeklyDigest] = useState(true);
-
   useEffect(() => {
     if (user) {
       fetchProfile();
     }
   }, [user]);
-
   const fetchProfile = async () => {
     if (!user) return;
-
     try {
-      const { data, error } = await supabase
-        .from('profiles')
-        .select('id, display_name, username, bio, created_at, updated_at')
-        .eq('id', user.id)
-        .maybeSingle();
-
+      const {
+        data,
+        error
+      } = await supabase.from('profiles').select('id, display_name, username, bio, created_at, updated_at').eq('id', user.id).maybeSingle();
       if (error) throw error;
-
       if (data) {
         setProfile(data);
         setDisplayName(data.display_name || '');
@@ -75,13 +63,11 @@ const Settings = () => {
           id: user.id,
           display_name: null,
           bio: null,
-          username: 'Racing Driver', // Default username
+          username: 'Racing Driver' // Default username
         };
-        
-        const { error: insertError } = await supabase
-          .from('profiles')
-          .insert(newProfile);
-
+        const {
+          error: insertError
+        } = await supabase.from('profiles').insert(newProfile);
         if (insertError) throw insertError;
       }
     } catch (error) {
@@ -89,71 +75,62 @@ const Settings = () => {
       toast({
         title: 'Error',
         description: 'Failed to load profile data',
-        variant: 'destructive',
+        variant: 'destructive'
       });
     } finally {
       setLoading(false);
     }
   };
-
   const saveProfile = async () => {
     if (!user || !profile) return;
-
     setSaving(true);
     try {
-      const { error } = await supabase
-        .from('profiles')
-        .update({
-          display_name: displayName.trim() || null,
-          username: username.trim() || 'Racing Driver',
-          bio: bio.trim() || null,
-        })
-        .eq('id', user.id);
-
+      const {
+        error
+      } = await supabase.from('profiles').update({
+        display_name: displayName.trim() || null,
+        username: username.trim() || 'Racing Driver',
+        bio: bio.trim() || null
+      }).eq('id', user.id);
       if (error) throw error;
-
       setProfile({
         ...profile,
         display_name: displayName.trim() || null,
         username: username.trim() || 'Racing Driver',
-        bio: bio.trim() || null,
+        bio: bio.trim() || null
       });
-
       toast({
         title: 'Profile Updated',
-        description: 'Your profile has been successfully updated.',
+        description: 'Your profile has been successfully updated.'
       });
     } catch (error) {
       console.error('Error updating profile:', error);
       toast({
         title: 'Error',
         description: 'Failed to update profile. Please try again.',
-        variant: 'destructive',
+        variant: 'destructive'
       });
     } finally {
       setSaving(false);
     }
   };
-
   const handleSignOut = async () => {
     try {
       await signOut();
       toast({
         title: 'Signed Out',
-        description: 'You have been successfully signed out.',
+        description: 'You have been successfully signed out.'
       });
     } catch (error) {
       toast({
         title: 'Error',
         description: 'Failed to sign out. Please try again.',
-        variant: 'destructive',
+        variant: 'destructive'
       });
     }
   };
-
   if (!user) {
-    return (
-      <div className="min-h-screen bg-background">
+    return <div className="min-h-screen bg-background">
         <Header />
         <div className="container max-w-4xl mx-auto px-4 py-8">
           <div className="text-center">
@@ -166,30 +143,21 @@ const Settings = () => {
             </Link>
           </div>
         </div>
-      </div>
-    );
+      </div>;
   }
-
   if (loading) {
-    return (
-      <div className="min-h-screen bg-background">
+    return <div className="min-h-screen bg-background">
         <Header />
         <div className="container max-w-4xl mx-auto px-4 py-8">
           <div className="text-center">Loading...</div>
         </div>
-      </div>
-    );
+      </div>;
   }
-
-  return (
-    <div className="min-h-screen bg-background">
+  return <div className="min-h-screen bg-background">
       <Header />
       <main className="container max-w-4xl mx-auto px-4 py-8">
         <div className="mb-6">
-          <Link 
-            to="/" 
-            className="inline-flex items-center gap-2 text-muted-foreground hover:text-foreground transition-colors"
-          >
+          <Link to="/" className="inline-flex items-center gap-2 text-muted-foreground hover:text-foreground transition-colors">
             <ArrowLeft className="h-4 w-4" />
             Back to Home
           </Link>
@@ -215,51 +183,24 @@ const Settings = () => {
               </CardDescription>
             </CardHeader>
             <CardContent className="space-y-4">
-              <div className="space-y-2">
-                <Label htmlFor="username">Username</Label>
-                <Input
-                  id="username"
-                  placeholder="Enter your username"
-                  value={username}
-                  onChange={(e) => setUsername(e.target.value)}
-                />
-                <p className="text-xs text-muted-foreground">
-                  This is your unique username shown in leaderboards
-                </p>
-              </div>
+              
               <div className="space-y-2">
                 <Label htmlFor="display-name">Display Name</Label>
-                <Input
-                  id="display-name"
-                  placeholder="Enter your display name (optional)"
-                  value={displayName}
-                  onChange={(e) => setDisplayName(e.target.value)}
-                />
+                <Input id="display-name" placeholder="Enter your display name (optional)" value={displayName} onChange={e => setDisplayName(e.target.value)} />
                 <p className="text-xs text-muted-foreground">
                   Optional display name for a more personal touch
                 </p>
               </div>
               <div className="space-y-2">
                 <Label htmlFor="bio">Bio</Label>
-                <Textarea
-                  id="bio"
-                  placeholder="Tell others about yourself and your racing predictions..."
-                  value={bio}
-                  onChange={(e) => setBio(e.target.value)}
-                  rows={3}
-                />
+                <Textarea id="bio" placeholder="Tell others about yourself and your racing predictions..." value={bio} onChange={e => setBio(e.target.value)} rows={3} />
                 <p className="text-xs text-muted-foreground">
                   Optional bio that appears on your profile
                 </p>
               </div>
               <div className="space-y-2">
                 <Label htmlFor="email">Email Address</Label>
-                <Input
-                  id="email"
-                  value={user.email || ''}
-                  disabled
-                  className="bg-muted"
-                />
+                <Input id="email" value={user.email || ''} disabled className="bg-muted" />
                 <p className="text-xs text-muted-foreground">
                   Email cannot be changed from this page
                 </p>
@@ -286,10 +227,7 @@ const Settings = () => {
                     Receive notifications about league updates and race results
                   </p>
                 </div>
-                <Switch
-                  checked={emailNotifications}
-                  onCheckedChange={setEmailNotifications}
-                />
+                <Switch checked={emailNotifications} onCheckedChange={setEmailNotifications} />
               </div>
               <Separator />
               <div className="flex items-center justify-between">
@@ -299,10 +237,7 @@ const Settings = () => {
                     Get a weekly summary of your league standings and upcoming races
                   </p>
                 </div>
-                <Switch
-                  checked={weeklyDigest}
-                  onCheckedChange={setWeeklyDigest}
-                />
+                <Switch checked={weeklyDigest} onCheckedChange={setWeeklyDigest} />
               </div>
             </CardContent>
           </Card>
@@ -330,10 +265,7 @@ const Settings = () => {
               </div>
               <Separator />
               <div className="flex justify-end">
-                <RacingButton 
-                  variant="outline" 
-                  onClick={handleSignOut}
-                >
+                <RacingButton variant="outline" onClick={handleSignOut}>
                   Sign Out
                 </RacingButton>
               </div>
@@ -361,19 +293,13 @@ const Settings = () => {
             <RacingButton variant="outline" asChild>
               <Link to="/">Cancel</Link>
             </RacingButton>
-            <RacingButton 
-              onClick={saveProfile}
-              disabled={saving}
-              className="gap-2"
-            >
+            <RacingButton onClick={saveProfile} disabled={saving} className="gap-2">
               <Save className="h-4 w-4" />
               {saving ? 'Saving...' : 'Save Changes'}
             </RacingButton>
           </div>
         </div>
       </main>
-    </div>
-  );
+    </div>;
 };
-
 export default Settings;
