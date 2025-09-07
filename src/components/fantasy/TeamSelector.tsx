@@ -62,7 +62,7 @@ const RacePrediction = () => {
       // Load existing predictions for this race
       const { data: existingPrediction } = await supabase
         .from('user_predictions')
-        .select('predicted_winner, predicted_podium')
+        .select('predicted_winner, predicted_podium, predicted_fastest_lap, predicted_dnf')
         .eq('user_id', user.id)
         .eq('race_id', raceId)
         .maybeSingle();
@@ -74,15 +74,37 @@ const RacePrediction = () => {
         );
         setPredictions(validPredictions);
         
-        // Set available drivers (excluding those in predictions)
+        // Load fastest lap prediction
+        if (existingPrediction.predicted_fastest_lap) {
+          setFastestLapPrediction(existingPrediction.predicted_fastest_lap);
+          console.log('✅ Loaded fastest lap:', getDriverById(existingPrediction.predicted_fastest_lap)?.name);
+        }
+        
+        // Load DNF prediction
+        if (existingPrediction.predicted_dnf) {
+          setDnfPrediction(existingPrediction.predicted_dnf);
+          console.log('✅ Loaded DNF:', getDriverById(existingPrediction.predicted_dnf)?.name);
+        }
+        
+        // Set available drivers (excluding those already used)
+        const usedDrivers = [
+          ...validPredictions,
+          existingPrediction.predicted_fastest_lap,
+          existingPrediction.predicted_dnf
+        ].filter(Boolean);
+        
         const remainingDrivers = drivers
           .map(d => d.id)
-          .filter(id => !validPredictions.includes(id));
+          .filter(id => !usedDrivers.includes(id));
         setAvailableDrivers(remainingDrivers);
         setIsSaved(true);
+        
+        console.log('✅ Loaded ALL predictions: positions=' + validPredictions.length + ', fastest_lap=' + (existingPrediction.predicted_fastest_lap ? 'Yes' : 'No') + ', dnf=' + (existingPrediction.predicted_dnf ? 'Yes' : 'No'));
       } else {
         console.log('🆕 No existing predictions, starting fresh');
         setPredictions([]);
+        setFastestLapPrediction('');
+        setDnfPrediction('');
         setAvailableDrivers(drivers.map(d => d.id));
         setIsSaved(true);
       }
@@ -206,7 +228,13 @@ const RacePrediction = () => {
 
       const raceId = races[0].id;
       const predictedWinner = predictions.length > 0 ? predictions[0] : null;
-      const predictedPodium = predictions.slice(0, 3); // Top 3 predictions
+      const predictedPodium = predictions.slice(0, 10); // Save ALL 10 position predictions, not just 3
+      
+      console.log('📊 Saving ALL predictions:');
+      console.log('- Winner:', predictedWinner ? getDriverById(predictedWinner)?.name : 'None');
+      console.log('- Top 10 positions:', predictedPodium.map((id, index) => `P${index + 1}: ${getDriverById(id)?.name}`));
+      console.log('- Fastest lap:', fastestLapPrediction ? getDriverById(fastestLapPrediction)?.name : 'None');
+      console.log('- DNF:', dnfPrediction ? getDriverById(dnfPrediction)?.name : 'None');
 
       // Save or update prediction in database
       const { data: existingPrediction } = await supabase
@@ -254,8 +282,8 @@ const RacePrediction = () => {
       
       setIsSaved(true);
       toast({
-        title: "Predictions Saved!",
-        description: `Saved ${predictions.length} predictions to your account`,
+        title: "All Predictions Saved!",
+        description: `Saved ${predictions.length} position predictions + fastest lap + DNF to your account`,
       });
     } catch (error) {
       console.error('Error saving predictions:', error);

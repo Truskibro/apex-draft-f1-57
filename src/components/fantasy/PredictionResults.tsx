@@ -226,7 +226,7 @@ export const PredictionResults = ({ raceId }: PredictionResultsProps) => {
                   <>
                     <CheckCircle className="h-4 w-4 text-green-500" />
                     <Badge variant="default" className="bg-green-500">
-                      +5 pts
+                      +10 pts
                     </Badge>
                   </>
                 ) : (
@@ -253,7 +253,7 @@ export const PredictionResults = ({ raceId }: PredictionResultsProps) => {
                   <>
                     <CheckCircle className="h-4 w-4 text-green-500" />
                     <Badge variant="default" className="bg-green-500">
-                      +3 pts
+                      +10 pts
                     </Badge>
                   </>
                 ) : (
