@@ -223,6 +223,8 @@ const RacePrediction = () => {
           .update({
             predicted_winner: predictedWinner,
             predicted_podium: predictedPodium,
+            predicted_fastest_lap: fastestLapPrediction || null,
+            predicted_dnf: dnfPrediction || null,
             updated_at: new Date().toISOString()
           })
           .eq('id', existingPrediction.id);
@@ -237,6 +239,8 @@ const RacePrediction = () => {
             race_id: raceId,
             predicted_winner: predictedWinner,
             predicted_podium: predictedPodium,
+            predicted_fastest_lap: fastestLapPrediction || null,
+            predicted_dnf: dnfPrediction || null,
             points_earned: 0 // Will be calculated when race completes
           });
 

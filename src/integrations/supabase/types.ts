@@ -146,14 +146,22 @@ export type Database = {
           country_flag: string
           created_at: string
           current_lap: string | null
+          dnf_drivers: string[] | null
+          eighth_place: string | null
           fastest_lap_driver: string | null
+          fifth_place: string | null
+          fourth_place: string | null
           id: string
           location: string
           name: string
+          ninth_place: string | null
           race_date: string
           race_time: string
           second_place: string | null
+          seventh_place: string | null
+          sixth_place: string | null
           status: Database["public"]["Enums"]["race_status"]
+          tenth_place: string | null
           third_place: string | null
           total_laps: number | null
           updated_at: string
@@ -163,14 +171,22 @@ export type Database = {
           country_flag: string
           created_at?: string
           current_lap?: string | null
+          dnf_drivers?: string[] | null
+          eighth_place?: string | null
           fastest_lap_driver?: string | null
+          fifth_place?: string | null
+          fourth_place?: string | null
           id?: string
           location: string
           name: string
+          ninth_place?: string | null
           race_date: string
           race_time: string
           second_place?: string | null
+          seventh_place?: string | null
+          sixth_place?: string | null
           status?: Database["public"]["Enums"]["race_status"]
+          tenth_place?: string | null
           third_place?: string | null
           total_laps?: number | null
           updated_at?: string
@@ -180,14 +196,22 @@ export type Database = {
           country_flag?: string
           created_at?: string
           current_lap?: string | null
+          dnf_drivers?: string[] | null
+          eighth_place?: string | null
           fastest_lap_driver?: string | null
+          fifth_place?: string | null
+          fourth_place?: string | null
           id?: string
           location?: string
           name?: string
+          ninth_place?: string | null
           race_date?: string
           race_time?: string
           second_place?: string | null
+          seventh_place?: string | null
+          sixth_place?: string | null
           status?: Database["public"]["Enums"]["race_status"]
+          tenth_place?: string | null
           third_place?: string | null
           total_laps?: number | null
           updated_at?: string
@@ -221,6 +245,8 @@ export type Database = {
           created_at: string
           id: string
           points_earned: number | null
+          predicted_dnf: string | null
+          predicted_fastest_lap: string | null
           predicted_podium: string[] | null
           predicted_winner: string | null
           race_id: string
@@ -231,6 +257,8 @@ export type Database = {
           created_at?: string
           id?: string
           points_earned?: number | null
+          predicted_dnf?: string | null
+          predicted_fastest_lap?: string | null
           predicted_podium?: string[] | null
           predicted_winner?: string | null
           race_id: string
@@ -241,6 +269,8 @@ export type Database = {
           created_at?: string
           id?: string
           points_earned?: number | null
+          predicted_dnf?: string | null
+          predicted_fastest_lap?: string | null
           predicted_podium?: string[] | null
           predicted_winner?: string | null
           race_id?: string
@@ -248,6 +278,20 @@ export type Database = {
           user_id?: string
         }
         Relationships: [
+          {
+            foreignKeyName: "user_predictions_predicted_dnf_fkey"
+            columns: ["predicted_dnf"]
+            isOneToOne: false
+            referencedRelation: "drivers"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "user_predictions_predicted_fastest_lap_fkey"
+            columns: ["predicted_fastest_lap"]
+            isOneToOne: false
+            referencedRelation: "drivers"
+            referencedColumns: ["id"]
+          },
           {
             foreignKeyName: "user_predictions_predicted_winner_fkey"
             columns: ["predicted_winner"]

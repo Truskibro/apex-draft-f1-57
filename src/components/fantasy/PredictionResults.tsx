@@ -10,12 +10,23 @@ type PredictionResult = {
   id: string;
   predicted_winner: string;
   predicted_podium: string[];
+  predicted_fastest_lap?: string;
+  predicted_dnf?: string;
   points_earned: number;
   races: {
     name: string;
     winner: string;
     second_place?: string;
     third_place?: string;
+    fourth_place?: string;
+    fifth_place?: string;
+    sixth_place?: string;
+    seventh_place?: string;
+    eighth_place?: string;
+    ninth_place?: string;
+    tenth_place?: string;
+    fastest_lap_driver?: string;
+    dnf_drivers?: string[];
   };
 };
 
@@ -43,12 +54,23 @@ export const PredictionResults = ({ raceId }: PredictionResultsProps) => {
           id,
           predicted_winner,
           predicted_podium,
+          predicted_fastest_lap,
+          predicted_dnf,
           points_earned,
           races (
             name,
             winner,
             second_place,
-            third_place
+            third_place,
+            fourth_place,
+            fifth_place,
+            sixth_place,
+            seventh_place,
+            eighth_place,
+            ninth_place,
+            tenth_place,
+            fastest_lap_driver,
+            dnf_drivers
           )
         `)
         .eq('user_id', user?.id)
@@ -140,18 +162,29 @@ export const PredictionResults = ({ raceId }: PredictionResultsProps) => {
           </div>
         </div>
 
-        {/* Podium Predictions */}
+        {/* Top 10 Predictions */}
         {prediction.predicted_podium && prediction.predicted_podium.length > 0 && (
           <div className="p-3 rounded-lg border">
-            <div className="font-medium mb-2">Podium Predictions</div>
+            <div className="font-medium mb-2">Top 10 Predictions</div>
             <div className="space-y-2">
-              {prediction.predicted_podium.slice(0, 3).map((driverId, index) => {
+              {prediction.predicted_podium.slice(0, 10).map((driverId, index) => {
                 const driverName = getDriverName(driverId);
-                const actualPosition = index === 0 ? prediction.races?.winner : 
-                                     index === 1 ? prediction.races?.second_place : 
-                                     index === 2 ? prediction.races?.third_place : null;
+                const positionResults = [
+                  prediction.races?.winner,
+                  prediction.races?.second_place,
+                  prediction.races?.third_place,
+                  prediction.races?.fourth_place,
+                  prediction.races?.fifth_place,
+                  prediction.races?.sixth_place,
+                  prediction.races?.seventh_place,
+                  prediction.races?.eighth_place,
+                  prediction.races?.ninth_place,
+                  prediction.races?.tenth_place
+                ];
+                const actualPosition = positionResults[index];
                 const isCorrect = driverName === actualPosition;
-                const points = isCorrect ? (index === 0 ? 25 : index === 1 ? 18 : 15) : 0;
+                const pointsSystem = [25, 18, 15, 12, 10, 8, 6, 4, 2, 1];
+                const points = isCorrect ? pointsSystem[index] : 0;
                 
                 return (
                   <div key={index} className="flex items-center justify-between text-sm">
@@ -178,6 +211,60 @@ export const PredictionResults = ({ raceId }: PredictionResultsProps) => {
                   </div>
                 );
               })}
+            </div>
+          </div>
+        )}
+
+        {/* Fastest Lap Prediction */}
+        {prediction.predicted_fastest_lap && (
+          <div className="p-3 rounded-lg border">
+            <div className="font-medium mb-2">Fastest Lap Prediction</div>
+            <div className="flex items-center justify-between text-sm">
+              <span>{getDriverName(prediction.predicted_fastest_lap)}</span>
+              <div className="flex items-center gap-2">
+                {getDriverName(prediction.predicted_fastest_lap) === prediction.races?.fastest_lap_driver ? (
+                  <>
+                    <CheckCircle className="h-4 w-4 text-green-500" />
+                    <Badge variant="default" className="bg-green-500">
+                      +5 pts
+                    </Badge>
+                  </>
+                ) : (
+                  <>
+                    <XCircle className="h-4 w-4 text-red-500" />
+                    <Badge variant="secondary">
+                      0 pts
+                    </Badge>
+                  </>
+                )}
+              </div>
+            </div>
+          </div>
+        )}
+
+        {/* DNF Prediction */}
+        {prediction.predicted_dnf && (
+          <div className="p-3 rounded-lg border">
+            <div className="font-medium mb-2">DNF Prediction</div>
+            <div className="flex items-center justify-between text-sm">
+              <span>{getDriverName(prediction.predicted_dnf)}</span>
+              <div className="flex items-center gap-2">
+                {prediction.races?.dnf_drivers?.includes(getDriverName(prediction.predicted_dnf)) ? (
+                  <>
+                    <CheckCircle className="h-4 w-4 text-green-500" />
+                    <Badge variant="default" className="bg-green-500">
+                      +3 pts
+                    </Badge>
+                  </>
+                ) : (
+                  <>
+                    <XCircle className="h-4 w-4 text-red-500" />
+                    <Badge variant="secondary">
+                      0 pts
+                    </Badge>
+                  </>
+                )}
+              </div>
             </div>
           </div>
         )}
