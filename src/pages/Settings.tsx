@@ -26,6 +26,7 @@ import { PredictionHistory } from '@/components/fantasy/PredictionHistory';
 interface UserProfile {
   id: string;
   display_name: string | null;
+  username: string | null;
   bio?: string | null;
   created_at: string;
   updated_at: string;
@@ -40,6 +41,7 @@ const Settings = () => {
   
   // Form state
   const [displayName, setDisplayName] = useState('');
+  const [username, setUsername] = useState('');
   const [bio, setBio] = useState('');
   const [emailNotifications, setEmailNotifications] = useState(true);
   const [weeklyDigest, setWeeklyDigest] = useState(true);
@@ -56,7 +58,7 @@ const Settings = () => {
     try {
       const { data, error } = await supabase
         .from('profiles')
-        .select('id, display_name, bio, created_at, updated_at')
+        .select('id, display_name, username, bio, created_at, updated_at')
         .eq('id', user.id)
         .maybeSingle();
 
@@ -65,6 +67,7 @@ const Settings = () => {
       if (data) {
         setProfile(data);
         setDisplayName(data.display_name || '');
+        setUsername((data as any).username || '');
         setBio((data as any).bio || '');
       } else {
         // Create a new profile if none exists
@@ -102,6 +105,7 @@ const Settings = () => {
         .from('profiles')
         .update({
           display_name: displayName.trim() || null,
+          username: username.trim() || 'Racing Driver',
           bio: bio.trim() || null,
         })
         .eq('id', user.id);
@@ -111,6 +115,7 @@ const Settings = () => {
       setProfile({
         ...profile,
         display_name: displayName.trim() || null,
+        username: username.trim() || 'Racing Driver',
         bio: bio.trim() || null,
       });
 
@@ -211,15 +216,27 @@ const Settings = () => {
             </CardHeader>
             <CardContent className="space-y-4">
               <div className="space-y-2">
-                <Label htmlFor="display-name">Username</Label>
+                <Label htmlFor="username">Username</Label>
+                <Input
+                  id="username"
+                  placeholder="Enter your username"
+                  value={username}
+                  onChange={(e) => setUsername(e.target.value)}
+                />
+                <p className="text-xs text-muted-foreground">
+                  This is your unique username shown in leaderboards
+                </p>
+              </div>
+              <div className="space-y-2">
+                <Label htmlFor="display-name">Display Name</Label>
                 <Input
                   id="display-name"
-                  placeholder="Enter your username"
+                  placeholder="Enter your display name (optional)"
                   value={displayName}
                   onChange={(e) => setDisplayName(e.target.value)}
                 />
                 <p className="text-xs text-muted-foreground">
-                  This is how other users will see your name
+                  Optional display name for a more personal touch
                 </p>
               </div>
               <div className="space-y-2">
