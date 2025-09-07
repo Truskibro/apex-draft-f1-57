@@ -7,6 +7,7 @@ import { Button } from '@/components/ui/button';
 import { RacingButton } from '@/components/ui/racing-button';
 import { useRaces } from '@/hooks/useRaces';
 import { format } from 'date-fns';
+import { PredictionResults } from '@/components/fantasy/PredictionResults';
 
 const RaceResults = () => {
   const { raceId } = useParams();
@@ -125,6 +126,13 @@ const RaceResults = () => {
               </Card>
             )}
           </div>
+
+          {/* User Predictions */}
+          {race.status === 'completed' && (
+            <div className="mb-8">
+              <PredictionResults raceId={race.id} />
+            </div>
+          )}
 
           {/* Race Results Table */}
           <Card className="overflow-hidden">
