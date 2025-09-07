@@ -359,37 +359,37 @@ const RacePrediction = () => {
     <section className="py-16 bg-muted/20" data-section="team-selector">
       <div className="container px-4">
         <div className="max-w-6xl mx-auto">
-          <div className="text-center mb-12">
-            <h2 className="text-4xl font-bold mb-4">Predict Finishing Order</h2>
+          <div className="text-center mb-8 md:mb-12">
+            <h2 className="text-2xl md:text-3xl lg:text-4xl font-bold mb-3 md:mb-4">Predict Finishing Order</h2>
             {hasUpcomingRaces ? (
-              <p className="text-xl text-muted-foreground mb-6">
+              <p className="text-base md:text-lg lg:text-xl text-muted-foreground mb-4 md:mb-6">
                 Predict the top 10 finishing positions for the next upcoming race
               </p>
             ) : (
-              <p className="text-xl text-muted-foreground mb-6">
+              <p className="text-base md:text-lg lg:text-xl text-muted-foreground mb-4 md:mb-6">
                 No upcoming races found. All predictions have been cleared after race completion.
               </p>
             )}
             
             {/* Points Display */}
-            <Card className="inline-flex items-center gap-4 p-4 bg-card border-2">
+            <Card className="inline-flex items-center gap-3 md:gap-4 p-3 md:p-4 bg-card border-2">
               <div className="text-center">
-                <div className="text-sm text-muted-foreground">Potential Points</div>
-                <div className="text-2xl font-bold text-accent">
+                <div className="text-xs md:text-sm text-muted-foreground">Potential Points</div>
+                <div className="text-xl md:text-2xl font-bold text-accent">
                   {getPotentialPoints()}
                 </div>
               </div>
-              <div className="h-8 w-px bg-border" />
+              <div className="h-6 md:h-8 w-px bg-border" />
               <div className="text-center">
-                <div className="text-sm text-muted-foreground">Predictions</div>
-                <div className="text-lg font-medium">
+                <div className="text-xs md:text-sm text-muted-foreground">Predictions</div>
+                <div className="text-base md:text-lg font-medium">
                   {predictions.length}/10
                 </div>
               </div>
             </Card>
           </div>
 
-          <div className="grid lg:grid-cols-2 gap-8">
+          <div className="grid lg:grid-cols-2 gap-6 md:gap-8">
             {/* Predicted Finishing Order */}
             <div>
               <div className="flex items-center gap-2 mb-6">

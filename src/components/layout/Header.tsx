@@ -32,39 +32,39 @@ const Header = () => {
 
   return (
     <header className="sticky top-0 z-50 w-full border-b border-border bg-card/95 backdrop-blur supports-[backdrop-filter]:bg-card/60">
-      <div className="container flex h-16 max-w-screen-2xl items-center justify-between">
-        <div className="flex items-center gap-6">
+      <div className="container flex h-16 max-w-screen-2xl items-center justify-between px-4">
+        <div className="flex items-center gap-2 md:gap-6">
           <Link to="/" className="flex items-center gap-2">
-            <Flag className="h-8 w-8 text-primary" />
+            <Flag className="h-6 w-6 md:h-8 md:w-8 text-primary" />
             <div className="flex flex-col">
-              <span className="text-lg font-bold text-primary">F1 Fantasy</span>
-              <span className="text-xs text-muted-foreground -mt-1">League</span>
+              <span className="text-sm md:text-lg font-bold text-primary">F1 Fantasy</span>
+              <span className="text-xs text-muted-foreground -mt-1 hidden sm:inline">League</span>
             </div>
           </Link>
           
           {user && (
-            <RacingButton variant="ghost" size="sm" asChild>
+            <RacingButton variant="ghost" size="sm" asChild className="hidden md:inline-flex">
               <Link to="/my-leagues" className="flex items-center gap-2">
                 <Trophy className="h-4 w-4" />
-                <span className="hidden sm:inline">My Leagues</span>
+                <span>My Leagues</span>
               </Link>
             </RacingButton>
           )}
         </div>
 
-        <div className="flex items-center gap-3">
+        <div className="flex items-center gap-1 md:gap-3">
           {user ? (
             <>
-              <div className="hidden sm:flex items-center gap-2 px-3 py-1 bg-muted rounded-lg">
+              <div className="hidden lg:flex items-center gap-2 px-3 py-1 bg-muted rounded-lg">
                 <span className="text-xs text-muted-foreground">Signed in as:</span>
-                <span className="text-sm font-medium">{user.email}</span>
+                <span className="text-sm font-medium truncate max-w-32">{user.email}</span>
               </div>
               
-              <div className="flex items-center gap-2 px-3 py-1 bg-primary/10 rounded-lg border border-primary/20">
-                <Trophy className="h-4 w-4 text-primary" />
+              <div className="flex items-center gap-1 md:gap-2 px-2 md:px-3 py-1 bg-primary/10 rounded-lg border border-primary/20">
+                <Trophy className="h-3 w-3 md:h-4 md:w-4 text-primary" />
                 <div className="flex flex-col">
-                  <span className="text-xs text-muted-foreground">Season Points</span>
-                  <span className="text-sm font-bold text-primary">{currentUserPoints}</span>
+                  <span className="text-xs text-muted-foreground hidden md:inline">Season Points</span>
+                  <span className="text-xs md:text-sm font-bold text-primary">{currentUserPoints}</span>
                 </div>
               </div>
               
@@ -74,15 +74,21 @@ const Header = () => {
                 </Link>
               </RacingButton>
               
-              <RacingButton variant="outline" size="sm" onClick={handleSignOut}>
+              <RacingButton variant="outline" size="sm" onClick={handleSignOut} className="hidden md:inline-flex">
                 <LogOut className="h-4 w-4" />
-                <span className="hidden sm:inline ml-2">Sign Out</span>
+                <span className="ml-2">Sign Out</span>
+              </RacingButton>
+              
+              {/* Mobile Sign Out */}
+              <RacingButton variant="outline" size="sm" onClick={handleSignOut} className="md:hidden">
+                <LogOut className="h-4 w-4" />
               </RacingButton>
             </>
           ) : (
             <Link to="/auth">
               <RacingButton variant="racing" size="sm">
-                Sign In
+                <span className="hidden sm:inline">Sign In</span>
+                <span className="sm:hidden">Login</span>
               </RacingButton>
             </Link>
           )}

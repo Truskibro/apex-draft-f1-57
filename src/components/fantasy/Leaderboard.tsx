@@ -109,36 +109,36 @@ const Leaderboard = () => {
           </div>
 
           {/* Side by Side Leaderboards */}
-          <div className="grid lg:grid-cols-2 gap-8">
+          <div className="grid lg:grid-cols-2 gap-6 md:gap-8">
             {/* Individual Leaderboard */}
             <div>
-              <div className="text-center mb-8">
+              <div className="text-center mb-6 md:mb-8">
                 <div className="flex items-center justify-center gap-2 mb-4">
-                  <User className="h-6 w-6 text-primary" />
-                  <h3 className="text-2xl font-bold">Individual Leaderboard</h3>
+                  <User className="h-5 w-5 md:h-6 md:w-6 text-primary" />
+                  <h3 className="text-xl md:text-2xl font-bold">Individual Leaderboard</h3>
                 </div>
               </div>
 
               {/* Top 3 Individual Podium */}
-              <div className="mb-8">
-                <div className="grid grid-cols-3 gap-2">
+              <div className="mb-6 md:mb-8">
+                <div className="grid grid-cols-3 gap-1 md:gap-2">
                   {standings.slice(0, 3).map((player, index) => {
                   const positions = ['order-2', 'order-1', 'order-3'];
-                  const heights = ['h-24', 'h-32', 'h-20'];
-                  return <Card key={player.id} className={`${positions[index]} p-4 text-center border-2 ${player.rank === 1 ? 'border-primary racing-shadow' : 'border-border'}`}>
-                        <div className={`${heights[index]} flex flex-col items-center justify-end mb-3`}>
+                  const heights = ['h-16 md:h-24', 'h-20 md:h-32', 'h-14 md:h-20'];
+                  return <Card key={player.id} className={`${positions[index]} p-2 md:p-4 text-center border-2 ${player.rank === 1 ? 'border-primary racing-shadow' : 'border-border'}`}>
+                        <div className={`${heights[index]} flex flex-col items-center justify-end mb-2 md:mb-3`}>
                           <div className="mb-1">{getRankIcon(player.rank)}</div>
-                          <Avatar className="w-12 h-12 border-2 border-primary">
+                          <Avatar className="w-8 h-8 md:w-12 md:h-12 border-2 border-primary">
                             <AvatarFallback className="bg-primary/20 text-primary font-bold text-xs">
                               {getInitials(player.profile?.display_name)}
                             </AvatarFallback>
                           </Avatar>
                         </div>
                         
-                        <h4 className="font-bold text-sm mb-1">
+                        <h4 className="font-bold text-xs md:text-sm mb-1 truncate">
                           {player.profile?.username || 'Racing Driver'}
                         </h4>
-                        <div className="text-lg font-bold text-primary">{player.total_points}</div>
+                        <div className="text-sm md:text-lg font-bold text-primary">{player.total_points}</div>
                         <div className="text-xs text-muted-foreground">pts</div>
                       </Card>;
                 })}
@@ -192,31 +192,31 @@ const Leaderboard = () => {
 
             {/* Team Leaderboard */}
             <div>
-              <div className="text-center mb-8">
+              <div className="text-center mb-6 md:mb-8">
                 <div className="flex items-center justify-center gap-2 mb-4">
-                  <Users className="h-6 w-6 text-green-500" />
-                  <h3 className="text-2xl font-bold">Team Leaderboard</h3>
+                  <Users className="h-5 w-5 md:h-6 md:w-6 text-green-500" />
+                  <h3 className="text-xl md:text-2xl font-bold">Team Leaderboard</h3>
                 </div>
               </div>
 
               {/* Top 3 Teams */}
-              <div className="mb-8">
-                <div className="grid grid-cols-3 gap-2">
+              <div className="mb-6 md:mb-8">
+                <div className="grid grid-cols-3 gap-1 md:gap-2">
                   {leagueStandings.slice(0, 3).map((team, index) => {
                   const positions = ['order-2', 'order-1', 'order-3'];
-                  const heights = ['h-24', 'h-32', 'h-20'];
-                  return <Card key={team.teamName} className={`${positions[index]} p-4 text-center border-2 ${team.rank === 1 ? 'border-green-500 racing-shadow' : 'border-border'}`}>
-                        <div className={`${heights[index]} flex flex-col items-center justify-end mb-3`}>
+                  const heights = ['h-16 md:h-24', 'h-20 md:h-32', 'h-14 md:h-20'];
+                  return <Card key={team.teamName} className={`${positions[index]} p-2 md:p-4 text-center border-2 ${team.rank === 1 ? 'border-green-500 racing-shadow' : 'border-border'}`}>
+                        <div className={`${heights[index]} flex flex-col items-center justify-end mb-2 md:mb-3`}>
                           <div className="mb-1">{getRankIcon(team.rank)}</div>
-                          <div className="w-12 h-12 bg-gradient-to-br from-green-500/20 to-emerald-500/20 rounded-full flex items-center justify-center border-2 border-green-500">
-                            <Users className="h-6 w-6 text-green-500" />
+                          <div className="w-8 h-8 md:w-12 md:h-12 bg-gradient-to-br from-green-500/20 to-emerald-500/20 rounded-full flex items-center justify-center border-2 border-green-500">
+                            <Users className="h-4 w-4 md:h-6 md:w-6 text-green-500" />
                           </div>
                         </div>
                         
-                        <h4 className="font-bold text-sm mb-1">
+                        <h4 className="font-bold text-xs md:text-sm mb-1 truncate">
                           {team.teamName}
                         </h4>
-                        <div className="text-lg font-bold text-green-500">{team.totalPoints}</div>
+                        <div className="text-sm md:text-lg font-bold text-green-500">{team.totalPoints}</div>
                         <div className="text-xs text-muted-foreground">pts</div>
                       </Card>;
                 })}
