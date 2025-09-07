@@ -297,6 +297,14 @@ export type Database = {
         Args: { prediction_id: string; race_id: string }
         Returns: number
       }
+      trigger_driver_points_update: {
+        Args: Record<PropertyKey, never>
+        Returns: undefined
+      }
+      update_driver_championship_points: {
+        Args: Record<PropertyKey, never>
+        Returns: undefined
+      }
       update_user_standings: {
         Args: { user_id_param: string }
         Returns: undefined
