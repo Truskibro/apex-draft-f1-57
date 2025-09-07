@@ -147,8 +147,7 @@ export const PredictionResults = ({ raceId }: PredictionResultsProps) => {
                     P{index + 1}: {getDriverName(driverId)}
                   </span>
                   <Badge variant="secondary">
-                    {/* For now, showing partial points - in full implementation would check actual podium */}
-                    +5 pts
+                    No points (results not verified)
                   </Badge>
                 </div>
               ))}
