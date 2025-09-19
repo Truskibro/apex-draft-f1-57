@@ -358,6 +358,10 @@ export type Database = {
         Args: Record<PropertyKey, never>
         Returns: undefined
       }
+      trigger_race_updates: {
+        Args: Record<PropertyKey, never>
+        Returns: undefined
+      }
       update_driver_championship_points: {
         Args: Record<PropertyKey, never>
         Returns: undefined
