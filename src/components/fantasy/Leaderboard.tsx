@@ -190,47 +190,47 @@ const Leaderboard = () => {
               </Card>
             </div>
 
-            {/* Team Leaderboard */}
+            {/* League Leaderboard */}
             <div>
               <div className="text-center mb-6 md:mb-8">
                 <div className="flex items-center justify-center gap-2 mb-4">
                   <Users className="h-5 w-5 md:h-6 md:w-6 text-green-500" />
-                  <h3 className="text-xl md:text-2xl font-bold">Team Leaderboard</h3>
+                  <h3 className="text-xl md:text-2xl font-bold">League Leaderboard</h3>
                 </div>
               </div>
 
-              {/* Top 3 Teams */}
+              {/* Top 3 Leagues */}
               <div className="mb-6 md:mb-8">
                 <div className="grid grid-cols-3 gap-1 md:gap-2">
-                  {leagueStandings.slice(0, 3).map((team, index) => {
+                  {leagueStandings.slice(0, 3).map((league, index) => {
                   const positions = ['order-2', 'order-1', 'order-3'];
                   const heights = ['h-16 md:h-24', 'h-20 md:h-32', 'h-14 md:h-20'];
-                  return <Card key={team.teamName} className={`${positions[index]} p-2 md:p-4 text-center border-2 ${team.rank === 1 ? 'border-green-500 racing-shadow' : 'border-border'}`}>
+                  return <Card key={league.teamName} className={`${positions[index]} p-2 md:p-4 text-center border-2 ${league.rank === 1 ? 'border-green-500 racing-shadow' : 'border-border'}`}>
                         <div className={`${heights[index]} flex flex-col items-center justify-end mb-2 md:mb-3`}>
-                          <div className="mb-1">{getRankIcon(team.rank)}</div>
+                          <div className="mb-1">{getRankIcon(league.rank)}</div>
                           <div className="w-8 h-8 md:w-12 md:h-12 bg-gradient-to-br from-green-500/20 to-emerald-500/20 rounded-full flex items-center justify-center border-2 border-green-500">
                             <Users className="h-4 w-4 md:h-6 md:w-6 text-green-500" />
                           </div>
                         </div>
                         
                         <h4 className="font-bold text-xs md:text-sm mb-1 truncate">
-                          {team.teamName}
+                          {league.teamName}
                         </h4>
-                        <div className="text-sm md:text-lg font-bold text-green-500">{team.totalPoints}</div>
+                        <div className="text-sm md:text-lg font-bold text-green-500">{league.totalPoints}</div>
                         <div className="text-xs text-muted-foreground">pts</div>
                       </Card>;
                 })}
                 </div>
               </div>
 
-              {/* Full Team Rankings */}
+              {/* Full League Rankings */}
               <Card className="border-2 max-h-[500px] overflow-y-auto">
                 <div className="divide-y divide-border">
-                  {leagueStandings.map(team => <div key={team.teamName} className="p-3 flex items-center justify-between hover:bg-muted/50 racing-transition">
+                  {leagueStandings.map(league => <div key={league.teamName} className="p-3 flex items-center justify-between hover:bg-muted/50 racing-transition">
                       <div className="flex items-center gap-2">
                         <div className="flex items-center gap-1 w-8">
-                          <span className="text-sm font-bold text-muted-foreground">#{team.rank}</span>
-                          {team.rank <= 3 && getRankIcon(team.rank)}
+                          <span className="text-sm font-bold text-muted-foreground">#{league.rank}</span>
+                          {league.rank <= 3 && getRankIcon(league.rank)}
                         </div>
                         
                         <div className="w-6 h-6 bg-gradient-to-br from-green-500/20 to-emerald-500/20 rounded-full flex items-center justify-center">
@@ -239,10 +239,10 @@ const Leaderboard = () => {
                         
                         <div>
                           <div className="font-semibold text-xs">
-                            {team.teamName}
+                            {league.teamName}
                           </div>
                           <div className="text-xs text-muted-foreground">
-                            {team.playerCount} member{team.playerCount !== 1 ? 's' : ''}
+                            {league.playerCount} member{league.playerCount !== 1 ? 's' : ''}
                           </div>
                         </div>
                       </div>
@@ -250,12 +250,12 @@ const Leaderboard = () => {
                       <div className="flex items-center gap-3 text-right">
                         <div>
                           <div className="text-xs text-muted-foreground">Avg</div>
-                          <div className="text-sm font-medium text-green-500">{Math.round(team.totalPoints / team.playerCount)}</div>
+                          <div className="text-sm font-medium text-green-500">{Math.round(league.totalPoints / league.playerCount)}</div>
                         </div>
                         
                         <div>
                           <div className="text-xs text-muted-foreground">Total</div>
-                          <div className="text-sm font-bold">{team.totalPoints}</div>
+                          <div className="text-sm font-bold">{league.totalPoints}</div>
                         </div>
                       </div>
                     </div>)}

@@ -384,6 +384,10 @@ export type Database = {
         Args: { league_id: string }
         Returns: boolean
       }
+      user_is_member_of_league: {
+        Args: { _league_id: string }
+        Returns: boolean
+      }
     }
     Enums: {
       race_status: "upcoming" | "live" | "completed"
