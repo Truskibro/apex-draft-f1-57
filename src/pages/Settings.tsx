@@ -18,6 +18,10 @@ interface UserProfile {
   display_name: string | null;
   username: string | null;
   bio?: string | null;
+  notification_preferences?: {
+    email_notifications: boolean;
+    weekly_digest: boolean;
+  };
   created_at: string;
   updated_at: string;
 }
@@ -50,20 +54,32 @@ const Settings = () => {
       const {
         data,
         error
-      } = await supabase.from('profiles').select('id, display_name, username, bio, created_at, updated_at').eq('id', user.id).maybeSingle();
+      } = await supabase.from('profiles').select('id, display_name, username, bio, notification_preferences, created_at, updated_at').eq('id', user.id).maybeSingle();
       if (error) throw error;
       if (data) {
-        setProfile(data);
+        setProfile(data as UserProfile);
         setDisplayName(data.display_name || '');
-        setUsername((data as any).username || '');
-        setBio((data as any).bio || '');
+        setUsername(data.username || '');
+        setBio(data.bio || '');
+        
+        // Handle notification preferences with proper type checking
+        const prefs = data.notification_preferences;
+        if (prefs && typeof prefs === 'object' && !Array.isArray(prefs)) {
+          const notificationPrefs = prefs as { email_notifications?: boolean; weekly_digest?: boolean };
+          setEmailNotifications(notificationPrefs.email_notifications ?? true);
+          setWeeklyDigest(notificationPrefs.weekly_digest ?? true);
+        }
       } else {
         // Create a new profile if none exists
         const newProfile = {
           id: user.id,
-          display_name: null,
+          display_name: user.email?.split('@')[0] || null,
           bio: null,
-          username: 'Racing Driver' // Default username
+          username: 'Racing Driver',
+          notification_preferences: {
+            email_notifications: true,
+            weekly_digest: true
+          }
         };
         const {
           error: insertError
@@ -82,7 +98,7 @@ const Settings = () => {
     }
   };
   const saveProfile = async () => {
-    if (!user || !profile) return;
+    if (!user) return;
     setSaving(true);
     try {
       const {
@@ -90,15 +106,29 @@ const Settings = () => {
       } = await supabase.from('profiles').update({
         display_name: displayName.trim() || null,
         username: username.trim() || 'Racing Driver',
-        bio: bio.trim() || null
+        bio: bio.trim() || null,
+        notification_preferences: {
+          email_notifications: emailNotifications,
+          weekly_digest: weeklyDigest
+        }
       }).eq('id', user.id);
       if (error) throw error;
-      setProfile({
+      
+      // Update local profile state
+      const updatedProfile = {
         ...profile,
+        id: user.id,
         display_name: displayName.trim() || null,
         username: username.trim() || 'Racing Driver',
-        bio: bio.trim() || null
-      });
+        bio: bio.trim() || null,
+        notification_preferences: {
+          email_notifications: emailNotifications,
+          weekly_digest: weeklyDigest
+        },
+        created_at: profile?.created_at || new Date().toISOString(),
+        updated_at: new Date().toISOString()
+      };
+      setProfile(updatedProfile);
       toast({
         title: 'Profile Updated',
         description: 'Your profile has been successfully updated.'
@@ -183,7 +213,18 @@ const Settings = () => {
               </CardDescription>
             </CardHeader>
             <CardContent className="space-y-4">
-              
+              <div className="space-y-2">
+                <Label htmlFor="displayName">Display Name</Label>
+                <Input 
+                  id="displayName" 
+                  placeholder="Enter your display name" 
+                  value={displayName} 
+                  onChange={e => setDisplayName(e.target.value)} 
+                />
+                <p className="text-xs text-muted-foreground">
+                  How your name appears to other users
+                </p>
+              </div>
               <div className="space-y-2">
                 <Label htmlFor="username">Username</Label>
                 <Input id="username" placeholder="Enter your username" value={username} onChange={e => setUsername(e.target.value)} />
