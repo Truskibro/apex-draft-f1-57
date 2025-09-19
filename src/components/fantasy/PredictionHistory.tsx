@@ -9,7 +9,6 @@ import { format } from 'date-fns';
 
 type PredictionHistoryItem = {
   id: string;
-  predicted_winner: string;
   predicted_podium: string[];
   points_earned: number;
   created_at: string;
@@ -40,7 +39,6 @@ export const PredictionHistory = () => {
         .from('user_predictions')
         .select(`
           id,
-          predicted_winner,
           predicted_podium,
           points_earned,
           created_at,
@@ -74,7 +72,9 @@ export const PredictionHistory = () => {
   };
 
   const isWinnerCorrect = (prediction: PredictionHistoryItem) => {
-    return prediction.races?.winner === getDriverName(prediction.predicted_winner || '');
+    if (!prediction.predicted_podium || prediction.predicted_podium.length === 0) return false;
+    const predictedWinner = getDriverName(prediction.predicted_podium[0]);
+    return prediction.races?.winner === predictedWinner;
   };
 
   const getTotalPoints = () => {
@@ -178,10 +178,13 @@ export const PredictionHistory = () => {
                         <div className="flex items-center justify-between">
                           <div>
                             <span className="text-sm text-muted-foreground">Your winner prediction: </span>
-                            <span className="font-medium">{getDriverName(prediction.predicted_winner)}</span>
+                            <span className="font-medium">
+                              {prediction.predicted_podium && prediction.predicted_podium.length > 0 
+                                ? getDriverName(prediction.predicted_podium[0]) 
+                                : 'No winner prediction'}
+                            </span>
                           </div>
-                          <div className="flex items-center gap-2">
-                            {isWinnerCorrect(prediction) ? (
+                          <div className="flex items-center gap-2">{isWinnerCorrect(prediction) ? (
                               <>
                                 <CheckCircle className="h-4 w-4 text-green-500" />
                                 <span className="text-sm text-green-600 font-medium">Correct!</span>

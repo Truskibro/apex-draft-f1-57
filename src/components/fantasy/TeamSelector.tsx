@@ -67,7 +67,7 @@ const RacePrediction = () => {
       // Load existing predictions for this race
       const { data: existingPrediction } = await supabase
         .from('user_predictions')
-        .select('predicted_winner, predicted_podium, predicted_fastest_lap, predicted_dnf')
+        .select('predicted_podium, predicted_fastest_lap, predicted_dnf')
         .eq('user_id', user.id)
         .eq('race_id', raceId)
         .maybeSingle();
@@ -281,11 +281,9 @@ const RacePrediction = () => {
       }
 
       const raceId = races[0].id;
-      const predictedWinner = predictions.length > 0 ? predictions[0] : null;
-      const predictedPodium = predictions.slice(0, 10); // Save ALL 10 position predictions, not just 3
+      const predictedPodium = predictions.slice(0, 10); // Save top 10 position predictions
       
       console.log('📊 Saving ALL predictions:');
-      console.log('- Winner:', predictedWinner ? getDriverById(predictedWinner)?.name : 'None');
       console.log('- Top 10 positions:', predictedPodium.map((id, index) => `P${index + 1}: ${getDriverById(id)?.name}`));
       console.log('- Fastest lap:', fastestLapPrediction ? getDriverById(fastestLapPrediction)?.name : 'None');
       console.log('- DNF:', dnfPrediction ? getDriverById(dnfPrediction)?.name : 'None');
@@ -303,7 +301,6 @@ const RacePrediction = () => {
         const { error } = await supabase
           .from('user_predictions')
           .update({
-            predicted_winner: predictedWinner,
             predicted_podium: predictedPodium,
             predicted_fastest_lap: fastestLapPrediction || null,
             predicted_dnf: dnfPrediction || null,
@@ -319,7 +316,6 @@ const RacePrediction = () => {
           .insert({
             user_id: user.id,
             race_id: raceId,
-            predicted_winner: predictedWinner,
             predicted_podium: predictedPodium,
             predicted_fastest_lap: fastestLapPrediction || null,
             predicted_dnf: dnfPrediction || null,

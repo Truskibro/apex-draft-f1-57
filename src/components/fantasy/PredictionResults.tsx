@@ -8,7 +8,6 @@ import { CheckCircle, XCircle, Target } from 'lucide-react';
 
 type PredictionResult = {
   id: string;
-  predicted_winner: string;
   predicted_podium: string[];
   predicted_fastest_lap?: string;
   predicted_dnf?: string;
@@ -52,7 +51,6 @@ export const PredictionResults = ({ raceId }: PredictionResultsProps) => {
         .from('user_predictions')
         .select(`
           id,
-          predicted_winner,
           predicted_podium,
           predicted_fastest_lap,
           predicted_dnf,
@@ -95,7 +93,11 @@ export const PredictionResults = ({ raceId }: PredictionResultsProps) => {
     return driver?.name || 'Unknown Driver';
   };
 
-  const isWinnerCorrect = prediction?.races?.winner === getDriverName(prediction?.predicted_winner || '');
+  const isWinnerCorrect = () => {
+    if (!prediction?.predicted_podium || prediction.predicted_podium.length === 0) return false;
+    const predictedWinner = getDriverName(prediction.predicted_podium[0]);
+    return prediction.races?.winner === predictedWinner;
+  };
 
   if (loading) {
     return (
@@ -137,14 +139,16 @@ export const PredictionResults = ({ raceId }: PredictionResultsProps) => {
           <div>
             <div className="font-medium">Race Winner</div>
             <div className="text-sm text-muted-foreground">
-              You predicted: {getDriverName(prediction.predicted_winner)}
+              You predicted: {prediction.predicted_podium && prediction.predicted_podium.length > 0 
+                ? getDriverName(prediction.predicted_podium[0]) 
+                : 'No winner prediction'}
             </div>
             <div className="text-sm text-muted-foreground">
               Actual winner: {prediction.races?.winner}
             </div>
           </div>
           <div className="flex items-center gap-2">
-            {isWinnerCorrect ? (
+            {isWinnerCorrect() ? (
               <>
                 <CheckCircle className="h-5 w-5 text-green-500" />
                 <Badge variant="default" className="bg-green-500">

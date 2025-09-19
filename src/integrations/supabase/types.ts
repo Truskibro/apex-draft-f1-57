@@ -254,7 +254,6 @@ export type Database = {
           predicted_dnf: string | null
           predicted_fastest_lap: string | null
           predicted_podium: string[] | null
-          predicted_winner: string | null
           race_id: string
           updated_at: string
           user_id: string
@@ -266,7 +265,6 @@ export type Database = {
           predicted_dnf?: string | null
           predicted_fastest_lap?: string | null
           predicted_podium?: string[] | null
-          predicted_winner?: string | null
           race_id: string
           updated_at?: string
           user_id: string
@@ -278,7 +276,6 @@ export type Database = {
           predicted_dnf?: string | null
           predicted_fastest_lap?: string | null
           predicted_podium?: string[] | null
-          predicted_winner?: string | null
           race_id?: string
           updated_at?: string
           user_id?: string
@@ -294,13 +291,6 @@ export type Database = {
           {
             foreignKeyName: "user_predictions_predicted_fastest_lap_fkey"
             columns: ["predicted_fastest_lap"]
-            isOneToOne: false
-            referencedRelation: "drivers"
-            referencedColumns: ["id"]
-          },
-          {
-            foreignKeyName: "user_predictions_predicted_winner_fkey"
-            columns: ["predicted_winner"]
             isOneToOne: false
             referencedRelation: "drivers"
             referencedColumns: ["id"]
