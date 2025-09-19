@@ -1,149 +1,43 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useCallback } from 'react';
 import { Link } from 'react-router-dom';
 import Header from '@/components/layout/Header';
 import { RacingButton } from '@/components/ui/racing-button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
-import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
-import { Textarea } from '@/components/ui/textarea';
-import { Switch } from '@/components/ui/switch';
 import { Separator } from '@/components/ui/separator';
 import { useAuth } from '@/hooks/useAuth';
 import { useToast } from '@/hooks/use-toast';
-import { supabase } from '@/integrations/supabase/client';
-import { ArrowLeft, User, Bell, Shield, Palette, Save, Mail, History } from 'lucide-react';
+import { useProfile, UserProfile } from '@/hooks/useProfile';
+import { ArrowLeft, Shield, Save, Mail, History } from 'lucide-react';
 import { PredictionHistory } from '@/components/fantasy/PredictionHistory';
-interface UserProfile {
-  id: string;
-  display_name: string | null;
-  username: string | null;
-  bio?: string | null;
-  notification_preferences?: {
-    email_notifications: boolean;
-    weekly_digest: boolean;
-  };
-  created_at: string;
-  updated_at: string;
-}
-const Settings = () => {
-  const {
-    user,
-    signOut
-  } = useAuth();
-  const {
-    toast
-  } = useToast();
-  const [loading, setLoading] = useState(true);
-  const [saving, setSaving] = useState(false);
-  const [profile, setProfile] = useState<UserProfile | null>(null);
+import { ProfileForm } from '@/components/settings/ProfileForm';
+import { NotificationSettings } from '@/components/settings/NotificationSettings';
 
-  // Form state
-  const [displayName, setDisplayName] = useState('');
-  const [username, setUsername] = useState('');
-  const [bio, setBio] = useState('');
-  const [emailNotifications, setEmailNotifications] = useState(true);
-  const [weeklyDigest, setWeeklyDigest] = useState(true);
-  useEffect(() => {
-    if (user) {
-      fetchProfile();
-    }
-  }, [user]);
-  const fetchProfile = async () => {
-    if (!user) return;
-    try {
-      const {
-        data,
-        error
-      } = await supabase.from('profiles').select('id, display_name, username, bio, notification_preferences, created_at, updated_at').eq('id', user.id).maybeSingle();
-      if (error) throw error;
-      if (data) {
-        setProfile(data as UserProfile);
-        setDisplayName(data.display_name || '');
-        setUsername(data.username || '');
-        setBio(data.bio || '');
-        
-        // Handle notification preferences with proper type checking
-        const prefs = data.notification_preferences;
-        if (prefs && typeof prefs === 'object' && !Array.isArray(prefs)) {
-          const notificationPrefs = prefs as { email_notifications?: boolean; weekly_digest?: boolean };
-          setEmailNotifications(notificationPrefs.email_notifications ?? true);
-          setWeeklyDigest(notificationPrefs.weekly_digest ?? true);
-        }
-      } else {
-        // Create a new profile if none exists
-        const newProfile = {
-          id: user.id,
-          display_name: user.email?.split('@')[0] || null,
-          bio: null,
-          username: 'Racing Driver',
-          notification_preferences: {
-            email_notifications: true,
-            weekly_digest: true
-          }
-        };
-        const {
-          error: insertError
-        } = await supabase.from('profiles').insert(newProfile);
-        if (insertError) throw insertError;
-      }
-    } catch (error) {
-      console.error('Error fetching profile:', error);
+const Settings = () => {
+  const { user, signOut } = useAuth();
+  const { toast } = useToast();
+  const { profile, loading, saving, updateProfile } = useProfile();
+  const [pendingUpdates, setPendingUpdates] = useState<Partial<UserProfile>>({});
+
+  const handleFieldUpdate = useCallback((updates: Partial<UserProfile>) => {
+    setPendingUpdates(prev => ({ ...prev, ...updates }));
+  }, []);
+
+  const handleSaveProfile = useCallback(async () => {
+    if (Object.keys(pendingUpdates).length === 0) {
       toast({
-        title: 'Error',
-        description: 'Failed to load profile data',
-        variant: 'destructive'
+        title: 'No Changes',
+        description: 'No changes to save.',
+        variant: 'default'
       });
-    } finally {
-      setLoading(false);
+      return;
     }
-  };
-  const saveProfile = async () => {
-    if (!user) return;
-    setSaving(true);
-    try {
-      const {
-        error
-      } = await supabase.from('profiles').update({
-        display_name: displayName.trim() || null,
-        username: username.trim() || 'Racing Driver',
-        bio: bio.trim() || null,
-        notification_preferences: {
-          email_notifications: emailNotifications,
-          weekly_digest: weeklyDigest
-        }
-      }).eq('id', user.id);
-      if (error) throw error;
-      
-      // Update local profile state
-      const updatedProfile = {
-        ...profile,
-        id: user.id,
-        display_name: displayName.trim() || null,
-        username: username.trim() || 'Racing Driver',
-        bio: bio.trim() || null,
-        notification_preferences: {
-          email_notifications: emailNotifications,
-          weekly_digest: weeklyDigest
-        },
-        created_at: profile?.created_at || new Date().toISOString(),
-        updated_at: new Date().toISOString()
-      };
-      setProfile(updatedProfile);
-      toast({
-        title: 'Profile Updated',
-        description: 'Your profile has been successfully updated.'
-      });
-    } catch (error) {
-      console.error('Error updating profile:', error);
-      toast({
-        title: 'Error',
-        description: 'Failed to update profile. Please try again.',
-        variant: 'destructive'
-      });
-    } finally {
-      setSaving(false);
+
+    const success = await updateProfile(pendingUpdates);
+    if (success) {
+      setPendingUpdates({});
     }
-  };
+  }, [pendingUpdates, updateProfile, toast]);
   const handleSignOut = async () => {
     try {
       await signOut();
@@ -202,86 +96,10 @@ const Settings = () => {
 
         <div className="grid gap-6">
           {/* Profile Settings */}
-          <Card>
-            <CardHeader>
-              <CardTitle className="flex items-center gap-2">
-                <User className="h-5 w-5 text-primary" />
-                Profile Information
-              </CardTitle>
-              <CardDescription>
-                Update your personal information and how others see you
-              </CardDescription>
-            </CardHeader>
-            <CardContent className="space-y-4">
-              <div className="space-y-2">
-                <Label htmlFor="displayName">Display Name</Label>
-                <Input 
-                  id="displayName" 
-                  placeholder="Enter your display name" 
-                  value={displayName} 
-                  onChange={e => setDisplayName(e.target.value)} 
-                />
-                <p className="text-xs text-muted-foreground">
-                  How your name appears to other users
-                </p>
-              </div>
-              <div className="space-y-2">
-                <Label htmlFor="username">Username</Label>
-                <Input id="username" placeholder="Enter your username" value={username} onChange={e => setUsername(e.target.value)} />
-                <p className="text-xs text-muted-foreground">
-                  Your username for leagues and competitions
-                </p>
-              </div>
-              <div className="space-y-2">
-                <Label htmlFor="bio">Bio</Label>
-                <Textarea id="bio" placeholder="Tell others about yourself and your racing predictions..." value={bio} onChange={e => setBio(e.target.value)} rows={3} />
-                <p className="text-xs text-muted-foreground">
-                  Optional bio that appears on your profile
-                </p>
-              </div>
-              <div className="space-y-2">
-                <Label htmlFor="email">Email Address</Label>
-                <Input id="email" value={user.email || ''} disabled className="bg-muted" />
-                <p className="text-xs text-muted-foreground">
-                  Email cannot be changed from this page
-                </p>
-              </div>
-            </CardContent>
-          </Card>
+          <ProfileForm profile={profile} onUpdate={handleFieldUpdate} />
 
           {/* Notification Settings */}
-          <Card>
-            <CardHeader>
-              <CardTitle className="flex items-center gap-2">
-                <Bell className="h-5 w-5 text-primary" />
-                Notifications
-              </CardTitle>
-              <CardDescription>
-                Manage how you receive updates about your leagues and races
-              </CardDescription>
-            </CardHeader>
-            <CardContent className="space-y-4">
-              <div className="flex items-center justify-between">
-                <div className="space-y-0.5">
-                  <Label>Email Notifications</Label>
-                  <p className="text-sm text-muted-foreground">
-                    Receive notifications about league updates and race results
-                  </p>
-                </div>
-                <Switch checked={emailNotifications} onCheckedChange={setEmailNotifications} />
-              </div>
-              <Separator />
-              <div className="flex items-center justify-between">
-                <div className="space-y-0.5">
-                  <Label>Weekly Digest</Label>
-                  <p className="text-sm text-muted-foreground">
-                    Get a weekly summary of your league standings and upcoming races
-                  </p>
-                </div>
-                <Switch checked={weeklyDigest} onCheckedChange={setWeeklyDigest} />
-              </div>
-            </CardContent>
-          </Card>
+          <NotificationSettings profile={profile} onUpdate={handleFieldUpdate} />
 
           {/* Account Settings */}
           <Card>
@@ -334,7 +152,11 @@ const Settings = () => {
             <RacingButton variant="outline" asChild>
               <Link to="/">Cancel</Link>
             </RacingButton>
-            <RacingButton onClick={saveProfile} disabled={saving} className="gap-2">
+            <RacingButton 
+              onClick={handleSaveProfile} 
+              disabled={saving || Object.keys(pendingUpdates).length === 0} 
+              className="gap-2"
+            >
               <Save className="h-4 w-4" />
               {saving ? 'Saving...' : 'Save Changes'}
             </RacingButton>
