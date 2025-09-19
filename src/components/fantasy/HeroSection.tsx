@@ -5,9 +5,12 @@ import { Trophy, Zap, Users } from 'lucide-react';
 import heroImage from '@/assets/f1-hero.jpg';
 import JoinLeagueDialog from '@/components/fantasy/JoinLeagueDialog';
 import { useAuth } from '@/hooks/useAuth';
+import CountdownTimer from '@/components/ui/countdown-timer';
+import { useRaceTimer } from '@/hooks/useRaceTimer';
 
 const HeroSection = () => {
   const { user } = useAuth();
+  const { timingInfo } = useRaceTimer();
   return (
     <section className="relative overflow-hidden">
       {/* Background Image */}
@@ -75,6 +78,26 @@ const HeroSection = () => {
               </RacingButton>
             )}
           </div>
+
+          {/* Race Day Countdown */}
+          {timingInfo.isRaceDay && timingInfo.nextRace && (
+            <div className="mb-8 md:mb-12">
+              <CountdownTimer
+                targetDate={timingInfo.nextRace.raceDate}
+                targetTime={timingInfo.nextRace.raceTime}
+                title={`${timingInfo.nextRace.name} ${timingInfo.nextRace.country_flag}`}
+                description="Race starts in"
+                className="max-w-md"
+              />
+              {timingInfo.isPredictionLocked && (
+                <div className="mt-4 p-3 bg-destructive/10 border border-destructive/20 rounded-lg">
+                  <p className="text-sm text-destructive font-medium text-center">
+                    🔒 Predictions are now locked! Race starts in less than 1 hour.
+                  </p>
+                </div>
+              )}
+            </div>
+          )}
 
           {/* Quick Stats */}
           <div className="grid grid-cols-3 gap-4 md:gap-6 max-w-sm md:max-w-md">

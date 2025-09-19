@@ -2,11 +2,12 @@ import React, { useState } from 'react';
 import { Card } from '@/components/ui/card';
 import { RacingButton } from '@/components/ui/racing-button';
 import { Badge } from '@/components/ui/badge';
-import { Crown, Trophy, TrendingUp, Zap, Target, Loader2, GripVertical, Save, Check, X } from 'lucide-react';
+import { Crown, Trophy, TrendingUp, Zap, Target, Loader2, GripVertical, Save, Check, X, Lock } from 'lucide-react';
 import { useDrivers } from '@/hooks/useDrivers';
 import { useToast } from '@/hooks/use-toast';
 import { useAuth } from '@/hooks/useAuth';
 import { supabase } from '@/integrations/supabase/client';
+import { useRaceTimer } from '@/hooks/useRaceTimer';
 
 // F1 Championship scoring system
 const championshipPoints = [25, 18, 15, 12, 10, 8, 6, 4, 2, 1];
@@ -15,6 +16,7 @@ const RacePrediction = () => {
   const { drivers, loading } = useDrivers();
   const { toast } = useToast();
   const { user } = useAuth();
+  const { timingInfo } = useRaceTimer();
   const [predictions, setPredictions] = useState<string[]>([]);
   const [fastestLapPrediction, setFastestLapPrediction] = useState<string>('');
   const [dnfPrediction, setDnfPrediction] = useState<string>('');
@@ -164,6 +166,15 @@ const RacePrediction = () => {
 
 
   const addToPrediction = (driverId: string) => {
+    if (timingInfo.isPredictionLocked) {
+      toast({
+        title: "Predictions Locked",
+        description: "Predictions are locked 1 hour before race start",
+        variant: "destructive"
+      });
+      return;
+    }
+    
     if (predictions.length < 10 && availableDrivers.includes(driverId)) {
       setPredictions([...predictions, driverId]);
       setAvailableDrivers(availableDrivers.filter(id => id !== driverId));
@@ -172,6 +183,15 @@ const RacePrediction = () => {
   };
 
   const removeFromPrediction = (index: number) => {
+    if (timingInfo.isPredictionLocked) {
+      toast({
+        title: "Predictions Locked",
+        description: "Predictions are locked 1 hour before race start",
+        variant: "destructive"
+      });
+      return;
+    }
+    
     const driverId = predictions[index];
     setPredictions(predictions.filter((_, i) => i !== index));
     setAvailableDrivers([...availableDrivers, driverId]);
@@ -189,6 +209,10 @@ const RacePrediction = () => {
   };
 
   const movePrediction = (fromIndex: number, toIndex: number) => {
+    if (timingInfo.isPredictionLocked) {
+      return;
+    }
+    
     const newPredictions = [...predictions];
     const [movedDriver] = newPredictions.splice(fromIndex, 1);
     newPredictions.splice(toIndex, 0, movedDriver);
@@ -201,6 +225,15 @@ const RacePrediction = () => {
       toast({
         title: "Please sign in",
         description: "You need to be signed in to save predictions",
+        variant: "destructive"
+      });
+      return;
+    }
+
+    if (timingInfo.isPredictionLocked) {
+      toast({
+        title: "Predictions Locked",
+        description: "Predictions are locked 1 hour before race start",
         variant: "destructive"
       });
       return;
@@ -371,8 +404,22 @@ const RacePrediction = () => {
               </p>
             )}
             
+            {/* Prediction Lock Warning */}
+            {timingInfo.isPredictionLocked && (
+              <div className="mb-6 p-4 bg-destructive/10 border border-destructive/20 rounded-lg max-w-2xl mx-auto">
+                <div className="flex items-center justify-center gap-2">
+                  <Lock className="h-5 w-5 text-destructive" />
+                  <p className="text-destructive font-medium">
+                    Predictions are locked! Race starts in less than 1 hour.
+                  </p>
+                </div>
+              </div>
+            )}
+
             {/* Points Display */}
-            <Card className="inline-flex items-center gap-3 md:gap-4 p-3 md:p-4 bg-card border-2">
+            <Card className={`inline-flex items-center gap-3 md:gap-4 p-3 md:p-4 bg-card border-2 ${
+              timingInfo.isPredictionLocked ? 'opacity-50' : ''
+            }`}>
               <div className="text-center">
                 <div className="text-xs md:text-sm text-muted-foreground">Potential Points</div>
                 <div className="text-xl md:text-2xl font-bold text-accent">
@@ -386,6 +433,15 @@ const RacePrediction = () => {
                   {predictions.length}/10
                 </div>
               </div>
+              {timingInfo.isPredictionLocked && (
+                <>
+                  <div className="h-6 md:h-8 w-px bg-border" />
+                  <div className="text-center">
+                    <Lock className="h-4 w-4 text-destructive mx-auto" />
+                    <div className="text-xs text-destructive">Locked</div>
+                  </div>
+                </>
+              )}
             </Card>
           </div>
 
@@ -412,13 +468,17 @@ const RacePrediction = () => {
                     return (
                       <Card 
                         key={`${driverId}-${index}`}
-                        className={`p-3 border-2 border-primary/20 bg-primary/5 hover:bg-primary/10 racing-transition group cursor-grab active:cursor-grabbing ${
+                        className={`p-3 border-2 border-primary/20 bg-primary/5 racing-transition group ${
+                          timingInfo.isPredictionLocked 
+                            ? 'opacity-50 cursor-not-allowed' 
+                            : 'hover:bg-primary/10 cursor-grab active:cursor-grabbing'
+                        } ${
                           draggedIndex === index ? 'opacity-50 scale-105' : ''
                         }`}
-                        draggable
-                        onDragStart={(e) => handleDragStart(e, index)}
-                        onDragOver={handleDragOver}
-                        onDrop={(e) => handleDrop(e, index)}
+                        draggable={!timingInfo.isPredictionLocked}
+                        onDragStart={(e) => !timingInfo.isPredictionLocked && handleDragStart(e, index)}
+                        onDragOver={!timingInfo.isPredictionLocked ? handleDragOver : undefined}
+                        onDrop={(e) => !timingInfo.isPredictionLocked && handleDrop(e, index)}
                       >
                         <div className="flex items-center justify-between">
                           <div className="flex items-center gap-3">
@@ -444,7 +504,7 @@ const RacePrediction = () => {
                           
                           <div className="flex items-center gap-2">
                             {/* Fastest lap button */}
-                            {fastestLapPrediction !== driverId && (
+                            {fastestLapPrediction !== driverId && !timingInfo.isPredictionLocked && (
                               <button
                                 onClick={(e) => {
                                   e.stopPropagation();
@@ -459,7 +519,7 @@ const RacePrediction = () => {
                             )}
 
                             {/* DNF button */}
-                            {dnfPrediction !== driverId && (
+                            {dnfPrediction !== driverId && !timingInfo.isPredictionLocked && (
                               <button
                                 onClick={(e) => {
                                   e.stopPropagation();
@@ -477,13 +537,15 @@ const RacePrediction = () => {
                               +{championshipPoints[index] || 0} pts
                             </Badge>
                             
-                            <button
-                              onClick={() => removeFromPrediction(index)}
-                              className="text-destructive hover:text-destructive/80 text-sm"
-                              title="Remove from predictions"
-                            >
-                              ✕
-                            </button>
+                            {!timingInfo.isPredictionLocked && (
+                              <button
+                                onClick={() => removeFromPrediction(index)}
+                                className="text-destructive hover:text-destructive/80 text-sm"
+                                title="Remove from predictions"
+                              >
+                                ✕
+                              </button>
+                            )}
                           </div>
                         </div>
                       </Card>
@@ -590,8 +652,12 @@ const RacePrediction = () => {
                   return (
                      <Card 
                        key={driver.id}
-                       className="p-3 cursor-pointer racing-transition border-2 border-border hover:border-accent/50 hover:bg-accent/5 group"
-                       onClick={() => addToPrediction(driver.id)}
+                       className={`p-3 racing-transition border-2 border-border group ${
+                         timingInfo.isPredictionLocked 
+                           ? 'opacity-50 cursor-not-allowed' 
+                           : 'cursor-pointer hover:border-accent/50 hover:bg-accent/5'
+                       }`}
+                       onClick={() => !timingInfo.isPredictionLocked && addToPrediction(driver.id)}
                      >
                        <div className="flex items-center justify-between">
                          <div className="flex items-center gap-3">
@@ -613,33 +679,33 @@ const RacePrediction = () => {
                               <div className="text-sm font-medium text-accent">{driver.championship_points} pts</div>
                             </div>
                             
-                            {!fastestLapPrediction && (
-                              <button
-                                onClick={(e) => {
-                                  e.stopPropagation();
-                                  setFastestLapPrediction(driver.id);
-                                  setIsSaved(false);
-                                }}
-                                className="opacity-0 group-hover:opacity-100 transition-opacity bg-accent/20 hover:bg-accent/30 rounded p-1"
-                                title="Predict fastest lap"
-                              >
-                                <Zap className="h-4 w-4 text-accent" />
-                              </button>
-                            )}
+                             {!fastestLapPrediction && !timingInfo.isPredictionLocked && (
+                               <button
+                                 onClick={(e) => {
+                                   e.stopPropagation();
+                                   setFastestLapPrediction(driver.id);
+                                   setIsSaved(false);
+                                 }}
+                                 className="opacity-0 group-hover:opacity-100 transition-opacity bg-accent/20 hover:bg-accent/30 rounded p-1"
+                                 title="Predict fastest lap"
+                               >
+                                 <Zap className="h-4 w-4 text-accent" />
+                               </button>
+                             )}
                             
-                            {!dnfPrediction && (
-                              <button
-                                onClick={(e) => {
-                                  e.stopPropagation();
-                                  setDnfPrediction(driver.id);
-                                  setIsSaved(false);
-                                }}
-                                className="opacity-0 group-hover:opacity-100 transition-opacity bg-destructive/20 hover:bg-destructive/30 rounded p-1"
-                                title="Predict DNF"
-                              >
-                                <X className="h-4 w-4 text-destructive" />
-                              </button>
-                            )}
+                             {!dnfPrediction && !timingInfo.isPredictionLocked && (
+                               <button
+                                 onClick={(e) => {
+                                   e.stopPropagation();
+                                   setDnfPrediction(driver.id);
+                                   setIsSaved(false);
+                                 }}
+                                 className="opacity-0 group-hover:opacity-100 transition-opacity bg-destructive/20 hover:bg-destructive/30 rounded p-1"
+                                 title="Predict DNF"
+                               >
+                                 <X className="h-4 w-4 text-destructive" />
+                               </button>
+                             )}
                           </div>
                       </div>
                     </Card>
@@ -661,13 +727,18 @@ const RacePrediction = () => {
                 </Card>
 
                 <RacingButton 
-                  variant="racing" 
+                  variant={timingInfo.isPredictionLocked ? "outline" : "racing"}
                   size="lg" 
                   className="w-full"
-                  disabled={predictions.length === 0}
+                  disabled={predictions.length === 0 || timingInfo.isPredictionLocked}
                   onClick={handleSavePredictions}
                 >
-                  {isSaved ? (
+                  {timingInfo.isPredictionLocked ? (
+                    <>
+                      <Lock className="h-4 w-4 mr-2" />
+                      Predictions Locked
+                    </>
+                  ) : isSaved ? (
                     <>
                       <Check className="h-4 w-4 mr-2" />
                       Predictions Saved
