@@ -25,16 +25,19 @@ const RacePrediction = () => {
   const [isSaved, setIsSaved] = useState(true);
   const [hasUpcomingRaces, setHasUpcomingRaces] = useState(true);
 
-  // Update available drivers when drivers data loads
+  // Update available drivers when drivers data loads or user changes
   React.useEffect(() => {
-    console.log('🔄 Effect running, drivers.length:', drivers.length);
-    if (drivers.length > 0 && user) {
-      loadPredictionsFromDatabase();
-    } else if (drivers.length > 0) {
-      // Load from localStorage if not logged in
-      loadPredictionsFromLocalStorage();
+    console.log('🔄 Effect running, drivers.length:', drivers.length, 'user:', user?.id);
+    if (drivers.length > 0) {
+      if (user) {
+        console.log('👤 User logged in, loading from database');
+        loadPredictionsFromDatabase();
+      } else {
+        console.log('👤 No user, loading from localStorage');
+        loadPredictionsFromLocalStorage();
+      }
     }
-  }, [drivers, user]);
+  }, [drivers, user?.id]); // Changed dependency to user?.id for better reactivity
 
   const loadPredictionsFromDatabase = async () => {
     try {
