@@ -164,6 +164,24 @@ const RacePrediction = () => {
     setDnfPrediction('');
   };
 
+  // Save to localStorage whenever predictions change
+  React.useEffect(() => {
+    if (!user && drivers.length > 0) {
+      // Only save to localStorage if not logged in and we have valid data
+      localStorage.setItem('f1-predictions', JSON.stringify(predictions));
+      if (fastestLapPrediction) {
+        localStorage.setItem('f1-fastest-lap', fastestLapPrediction);
+      } else {
+        localStorage.removeItem('f1-fastest-lap');
+      }
+      if (dnfPrediction) {
+        localStorage.setItem('f1-dnf', dnfPrediction);
+      } else {
+        localStorage.removeItem('f1-dnf');
+      }
+    }
+  }, [predictions, fastestLapPrediction, dnfPrediction, user, drivers.length]);
+
 
   const addToPrediction = (driverId: string) => {
     if (timingInfo.isPredictionLocked) {
@@ -310,8 +328,16 @@ const RacePrediction = () => {
 
       // Also save to localStorage as backup
       localStorage.setItem('f1-predictions', JSON.stringify(predictions));
-      localStorage.setItem('f1-fastest-lap', fastestLapPrediction);
-      localStorage.setItem('f1-dnf', dnfPrediction);
+      if (fastestLapPrediction) {
+        localStorage.setItem('f1-fastest-lap', fastestLapPrediction);
+      } else {
+        localStorage.removeItem('f1-fastest-lap');
+      }
+      if (dnfPrediction) {
+        localStorage.setItem('f1-dnf', dnfPrediction);
+      } else {
+        localStorage.removeItem('f1-dnf');
+      }
       
       setIsSaved(true);
       toast({
@@ -576,10 +602,17 @@ const RacePrediction = () => {
                       </div>
                       <button
                         onClick={() => {
-                          setFastestLapPrediction('');
-                          setIsSaved(false);
+                          if (!timingInfo.isPredictionLocked) {
+                            setFastestLapPrediction('');
+                            setIsSaved(false);
+                          }
                         }}
-                        className="text-destructive hover:text-destructive/80 text-sm"
+                        disabled={timingInfo.isPredictionLocked}
+                        className={`text-sm ${
+                          timingInfo.isPredictionLocked 
+                            ? 'text-muted-foreground cursor-not-allowed' 
+                            : 'text-destructive hover:text-destructive/80'
+                        }`}
                       >
                         ✕
                       </button>
@@ -615,10 +648,17 @@ const RacePrediction = () => {
                       </div>
                       <button
                         onClick={() => {
-                          setDnfPrediction('');
-                          setIsSaved(false);
+                          if (!timingInfo.isPredictionLocked) {
+                            setDnfPrediction('');
+                            setIsSaved(false);
+                          }
                         }}
-                        className="text-destructive hover:text-destructive/80 text-sm"
+                        disabled={timingInfo.isPredictionLocked}
+                        className={`text-sm ${
+                          timingInfo.isPredictionLocked 
+                            ? 'text-muted-foreground cursor-not-allowed' 
+                            : 'text-destructive hover:text-destructive/80'
+                        }`}
                       >
                         ✕
                       </button>
