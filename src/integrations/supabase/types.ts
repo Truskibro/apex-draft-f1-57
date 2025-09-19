@@ -121,6 +121,7 @@ export type Database = {
           display_name: string | null
           id: string
           notification_preferences: Json | null
+          team_name: string | null
           updated_at: string
           username: string | null
         }
@@ -130,6 +131,7 @@ export type Database = {
           display_name?: string | null
           id: string
           notification_preferences?: Json | null
+          team_name?: string | null
           updated_at?: string
           username?: string | null
         }
@@ -139,6 +141,7 @@ export type Database = {
           display_name?: string | null
           id?: string
           notification_preferences?: Json | null
+          team_name?: string | null
           updated_at?: string
           username?: string | null
         }
