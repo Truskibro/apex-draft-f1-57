@@ -40,6 +40,8 @@ const RacePrediction = () => {
   }, [drivers, user?.id]); // Changed dependency to user?.id for better reactivity
 
   const loadPredictionsFromDatabase = async () => {
+    if (!user) return;
+    
     try {
       // Get the next upcoming race
       const { data: upcomingRaces } = await supabase
