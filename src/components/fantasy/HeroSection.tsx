@@ -7,19 +7,17 @@ import JoinLeagueDialog from '@/components/fantasy/JoinLeagueDialog';
 import { useAuth } from '@/hooks/useAuth';
 import CountdownTimer from '@/components/ui/countdown-timer';
 import { useRaceTimer } from '@/hooks/useRaceTimer';
-
 const HeroSection = () => {
-  const { user } = useAuth();
-  const { timingInfo } = useRaceTimer();
-  return (
-    <section className="relative overflow-hidden">
+  const {
+    user
+  } = useAuth();
+  const {
+    timingInfo
+  } = useRaceTimer();
+  return <section className="relative overflow-hidden">
       {/* Background Image */}
       <div className="absolute inset-0">
-        <img 
-          src={heroImage} 
-          alt="F1 Racing Background" 
-          className="w-full h-full object-cover"
-        />
+        <img src={heroImage} alt="F1 Racing Background" className="w-full h-full object-cover" />
         <div className="absolute inset-0 bg-gradient-to-r from-background/95 via-background/80 to-background/40" />
         <div className="absolute inset-0 bg-gradient-to-t from-background via-transparent to-transparent" />
       </div>
@@ -46,58 +44,40 @@ const HeroSection = () => {
           </p>
 
           <div className="flex flex-col sm:flex-row gap-3 md:gap-4 mb-8 md:mb-12">
-            {user ? (
-              <RacingButton variant="racing" size="lg" className="gap-2 w-full sm:w-auto" asChild>
+            {user ? <RacingButton variant="racing" size="lg" className="gap-2 w-full sm:w-auto" asChild>
                 <Link to="/create-league">
                   <Trophy className="h-4 w-4 md:h-5 md:w-5" />
                   <span className="text-sm md:text-base">Create League</span>
                 </Link>
-              </RacingButton>
-            ) : (
-              <RacingButton variant="racing" size="lg" className="gap-2 w-full sm:w-auto" asChild>
+              </RacingButton> : <RacingButton variant="racing" size="lg" className="gap-2 w-full sm:w-auto" asChild>
                 <Link to="/auth">
                   <Trophy className="h-4 w-4 md:h-5 md:w-5" />
                   <span className="text-sm md:text-base">Create League</span>
                 </Link>
-              </RacingButton>
-            )}
+              </RacingButton>}
             
-            {user ? (
-              <JoinLeagueDialog>
+            {user ? <JoinLeagueDialog>
                 <RacingButton variant="outline" size="lg" className="gap-2 w-full sm:w-auto">
                   <Users className="h-4 w-4 md:h-5 md:w-5" />
                   <span className="text-sm md:text-base">Join League</span>
                 </RacingButton>
-              </JoinLeagueDialog>
-            ) : (
-              <RacingButton variant="outline" size="lg" className="gap-2 w-full sm:w-auto" asChild>
+              </JoinLeagueDialog> : <RacingButton variant="outline" size="lg" className="gap-2 w-full sm:w-auto" asChild>
                 <Link to="/auth">
                   <Users className="h-4 w-4 md:h-5 md:w-5" />
                   <span className="text-sm md:text-base">Join League</span>
                 </Link>
-              </RacingButton>
-            )}
+              </RacingButton>}
           </div>
 
           {/* Race Day Countdown */}
-          {timingInfo.isRaceDay && timingInfo.nextRace && (
-            <div className="mb-8 md:mb-12">
-              <CountdownTimer
-                targetDate={timingInfo.nextRace.raceDate}
-                targetTime={timingInfo.nextRace.raceTime}
-                title={`${timingInfo.nextRace.name} ${timingInfo.nextRace.country_flag}`}
-                description="Race starts in"
-                className="max-w-md"
-              />
-              {timingInfo.isPredictionLocked && (
-                <div className="mt-4 p-3 bg-destructive/10 border border-destructive/20 rounded-lg">
+          {timingInfo.isRaceDay && timingInfo.nextRace && <div className="mb-8 md:mb-12">
+              <CountdownTimer targetDate={timingInfo.nextRace.raceDate} targetTime={timingInfo.nextRace.raceTime} title={`${timingInfo.nextRace.name} ${timingInfo.nextRace.country_flag}`} description="Race starts in" className="max-w-md" />
+              {timingInfo.isPredictionLocked && <div className="mt-4 p-3 bg-destructive/10 border border-destructive/20 rounded-lg">
                   <p className="text-sm text-destructive font-medium text-center">
                     🔒 Predictions are now locked! Race starts in less than 1 hour.
                   </p>
-                </div>
-              )}
-            </div>
-          )}
+                </div>}
+            </div>}
 
           {/* Quick Stats */}
           <div className="grid grid-cols-3 gap-4 md:gap-6 max-w-sm md:max-w-md">
@@ -110,14 +90,12 @@ const HeroSection = () => {
               <div className="text-xs text-muted-foreground">Positions</div>
             </div>
             <div className="text-center">
-              <div className="text-xl md:text-2xl font-bold text-accent">25</div>
-              <div className="text-xs text-muted-foreground">Max Points</div>
+              
+              
             </div>
           </div>
         </div>
       </div>
-    </section>
-  );
+    </section>;
 };
-
 export default HeroSection;
