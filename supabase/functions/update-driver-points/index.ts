@@ -63,7 +63,7 @@ serve(async (req) => {
     // Get all drivers from the database
     const { data: drivers, error: driversError } = await supabaseClient
       .from('drivers')
-      .select('id, name, championship_points')
+      .select('id, name')
 
     if (driversError) {
       throw driversError
@@ -71,9 +71,25 @@ serve(async (req) => {
 
     console.log(`Found ${drivers?.length} drivers in database`)
 
-    // Process each completed race
-    const pointsUpdates = []
-    let totalPointsAwarded = 0
+    // Reset all driver points to 0 before recalculating
+    console.log('Resetting all driver points to 0...')
+    const { error: resetError } = await supabaseClient
+      .from('drivers')
+      .update({ championship_points: 0 })
+      .neq('id', '00000000-0000-0000-0000-000000000000') // Update all drivers
+
+    if (resetError) {
+      console.error('Error resetting driver points:', resetError)
+      throw resetError
+    }
+
+    // Track total points per driver across all races
+    const driverPointsMap = new Map<string, number>()
+    
+    // Initialize all drivers with 0 points
+    drivers?.forEach(driver => {
+      driverPointsMap.set(driver.id, 0)
+    })
 
     for (const race of completedRaces) {
       console.log(`Processing race: ${race.name}`)
@@ -98,18 +114,9 @@ serve(async (req) => {
         if (driver) {
           const points = F1_POINTS_SYSTEM[result.position] || 0
           if (points > 0) {
-            const existingDriver = pointsUpdates.find(u => u.id === driver.id)
-            if (existingDriver) {
-              existingDriver.points += points
-            } else {
-              pointsUpdates.push({
-                id: driver.id,
-                name: driver.name,
-                points: points,
-                currentTotal: driver.championship_points || 0
-              })
-            }
-            totalPointsAwarded += points
+            // Add points to the driver's total in the map
+            const currentPoints = driverPointsMap.get(driver.id) || 0
+            driverPointsMap.set(driver.id, currentPoints + points)
             console.log(`${driver.name}: +${points} points for P${result.position} in ${race.name}`)
           }
         } else {
@@ -118,22 +125,26 @@ serve(async (req) => {
       }
     }
 
-    // Update driver points in database
-    if (pointsUpdates.length > 0) {
-      for (const update of pointsUpdates) {
-        const newTotal = update.currentTotal + update.points
-        
+    // Update driver points in database with final totals
+    let driversUpdated = 0
+    for (const [driverId, totalPoints] of driverPointsMap.entries()) {
+      if (totalPoints > 0) {
+        const driver = drivers?.find(d => d.id === driverId)
         const { error: updateError } = await supabaseClient
           .from('drivers')
-          .update({ championship_points: newTotal })
-          .eq('id', update.id)
+          .update({ championship_points: totalPoints })
+          .eq('id', driverId)
 
         if (updateError) {
-          console.error(`Error updating driver ${update.name}:`, updateError)
+          console.error(`Error updating driver ${driver?.name}:`, updateError)
         } else {
-          console.log(`✓ Updated ${update.name}: ${update.currentTotal} + ${update.points} = ${newTotal} points`)
+          console.log(`✓ Updated ${driver?.name}: ${totalPoints} total points`)
+          driversUpdated++
         }
       }
+    }
+
+    if (driversUpdated > 0) {
 
       // Recalculate all prediction points after driver updates
       console.log('Recalculating user prediction points...')
@@ -144,7 +155,7 @@ serve(async (req) => {
         console.log('✓ User prediction points recalculated')
       }
 
-      console.log(`Updated ${pointsUpdates.length} drivers with ${totalPointsAwarded} total points awarded`)
+      console.log(`Updated ${driversUpdated} drivers with championship points`)
     }
 
     // Log the update
@@ -153,8 +164,8 @@ serve(async (req) => {
     return new Response(
       JSON.stringify({ 
         success: true, 
-        message: `Updated ${pointsUpdates.length} drivers`,
-        updatedDrivers: pointsUpdates.length
+        message: `Updated ${driversUpdated} drivers`,
+        updatedDrivers: driversUpdated
       }),
       { 
         headers: { ...corsHeaders, 'Content-Type': 'application/json' },
