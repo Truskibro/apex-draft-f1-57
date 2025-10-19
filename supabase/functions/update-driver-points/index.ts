@@ -71,6 +71,19 @@ serve(async (req) => {
 
     console.log(`Found ${drivers?.length} drivers in database`)
 
+    // Helper to normalize names (handles accents, casing, extra spaces)
+    const normalize = (s: string | null): string =>
+      (s || '')
+        .normalize('NFD')
+        .replace(/[\u0300-\u036f]/g, '')
+        .toLowerCase()
+        .trim()
+        .replace(/\s+/g, ' ')
+
+    // Map of normalized driver name -> driver record
+    const driverByNormName = new Map<string, { id: string; name: string }>()
+    drivers?.forEach((d) => driverByNormName.set(normalize(d.name), d))
+
     // Reset all driver points to 0 before recalculating
     console.log('Resetting all driver points to 0...')
     const { error: resetError } = await supabaseClient
@@ -109,8 +122,11 @@ serve(async (req) => {
       ].filter(result => result.driver) // Filter out null/undefined positions
 
       // Award points based on finishing positions
+      const top10NormNames = new Set<string>()
       for (const result of racePositions) {
-        const driver = drivers?.find(d => d.name === result.driver)
+        const norm = normalize(result.driver as string)
+        if (norm) top10NormNames.add(norm)
+        const driver = driverByNormName.get(norm)
         if (driver) {
           const points = F1_POINTS_SYSTEM[result.position] || 0
           if (points > 0) {
@@ -121,6 +137,19 @@ serve(async (req) => {
           }
         } else {
           console.warn(`Driver not found in database: ${result.driver}`)
+        }
+      }
+
+      // Award fastest lap point (1) only if driver finished in top 10
+      if (race.fastest_lap_driver) {
+        const flNorm = normalize(race.fastest_lap_driver)
+        if (top10NormNames.has(flNorm)) {
+          const flDriver = driverByNormName.get(flNorm)
+          if (flDriver) {
+            const current = driverPointsMap.get(flDriver.id) || 0
+            driverPointsMap.set(flDriver.id, current + 1)
+            console.log(`${flDriver.name}: +1 point for Fastest Lap in ${race.name}`)
+          }
         }
       }
     }
