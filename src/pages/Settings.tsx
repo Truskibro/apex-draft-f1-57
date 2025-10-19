@@ -8,16 +8,18 @@ import { Separator } from '@/components/ui/separator';
 import { useAuth } from '@/hooks/useAuth';
 import { useToast } from '@/hooks/use-toast';
 import { useProfile, UserProfile } from '@/hooks/useProfile';
-import { ArrowLeft, Shield, Save, Mail, History } from 'lucide-react';
+import { ArrowLeft, Shield, Save, Mail, History, TrendingUp } from 'lucide-react';
 import { PredictionHistory } from '@/components/fantasy/PredictionHistory';
 import { ProfileForm } from '@/components/settings/ProfileForm';
 import { NotificationSettings } from '@/components/settings/NotificationSettings';
+import { supabase } from '@/integrations/supabase/client';
 
 const Settings = () => {
   const { user, signOut } = useAuth();
   const { toast } = useToast();
   const { profile, loading, saving, updateProfile } = useProfile();
   const [pendingUpdates, setPendingUpdates] = useState<Partial<UserProfile>>({});
+  const [updatingPoints, setUpdatingPoints] = useState(false);
 
   const handleFieldUpdate = useCallback((updates: Partial<UserProfile>) => {
     setPendingUpdates(prev => ({ ...prev, ...updates }));
@@ -38,6 +40,30 @@ const Settings = () => {
       setPendingUpdates({});
     }
   }, [pendingUpdates, updateProfile, toast]);
+
+  const handleUpdatePoints = async () => {
+    try {
+      setUpdatingPoints(true);
+      const { data, error } = await supabase.functions.invoke('update-driver-points', {
+        body: { trigger: 'manual' }
+      });
+      if (error) throw error as any;
+      toast({
+        title: 'Driver points updated',
+        description: data?.message || 'Recalculated championship points from completed races.'
+      });
+    } catch (err: any) {
+      console.error('Error updating driver points:', err);
+      toast({
+        title: 'Update failed',
+        description: err?.message || 'Could not update driver points.',
+        variant: 'destructive'
+      });
+    } finally {
+      setUpdatingPoints(false);
+    }
+  };
+
   const handleSignOut = async () => {
     try {
       await signOut();
@@ -128,6 +154,27 @@ const Settings = () => {
                   Sign Out
                 </RacingButton>
               </div>
+            </CardContent>
+          </Card>
+
+          {/* Maintenance */}
+          <Card>
+            <CardHeader>
+              <CardTitle className="flex items-center gap-2">
+                <TrendingUp className="h-5 w-5 text-primary" />
+                Maintenance
+              </CardTitle>
+              <CardDescription>
+                Recalculate driver championship points from completed races
+              </CardDescription>
+            </CardHeader>
+            <CardContent className="flex items-center justify-between gap-4">
+              <p className="text-sm text-muted-foreground">
+                Use this to sync points if results were corrected or updated.
+              </p>
+              <RacingButton onClick={handleUpdatePoints} disabled={updatingPoints} className="gap-2">
+                {updatingPoints ? 'Updating…' : 'Update Driver Points'}
+              </RacingButton>
             </CardContent>
           </Card>
 
