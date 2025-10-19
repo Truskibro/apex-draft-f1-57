@@ -20,6 +20,7 @@ const Settings = () => {
   const { profile, loading, saving, updateProfile } = useProfile();
   const [pendingUpdates, setPendingUpdates] = useState<Partial<UserProfile>>({});
   const [updatingPoints, setUpdatingPoints] = useState(false);
+  const [syncingOfficial, setSyncingOfficial] = useState(false);
 
   const handleFieldUpdate = useCallback((updates: Partial<UserProfile>) => {
     setPendingUpdates(prev => ({ ...prev, ...updates }));
@@ -61,6 +62,29 @@ const Settings = () => {
       });
     } finally {
       setUpdatingPoints(false);
+    }
+  };
+
+  const handleSyncOfficial = async () => {
+    try {
+      setSyncingOfficial(true);
+      const { data, error } = await supabase.functions.invoke('fetch-official-results-2025', {
+        body: { trigger: 'manual' }
+      });
+      if (error) throw error as any;
+      toast({
+        title: 'Synced 2025 official results',
+        description: data?.updatedDrivers ? `Updated ${data.updatedDrivers} drivers.` : 'Sync complete.'
+      });
+    } catch (err: any) {
+      console.error('Error syncing official results:', err);
+      toast({
+        title: 'Sync failed',
+        description: err?.message || 'Could not fetch official results.',
+        variant: 'destructive'
+      });
+    } finally {
+      setSyncingOfficial(false);
     }
   };
 
@@ -165,16 +189,21 @@ const Settings = () => {
                 Maintenance
               </CardTitle>
               <CardDescription>
-                Recalculate driver championship points from completed races
+                Sync results and recalculate driver championship points
               </CardDescription>
             </CardHeader>
-            <CardContent className="flex items-center justify-between gap-4">
+            <CardContent className="flex flex-col md:flex-row items-center justify-between gap-4">
               <p className="text-sm text-muted-foreground">
-                Use this to sync points if results were corrected or updated.
+                Use these tools to sync official results and points.
               </p>
-              <RacingButton onClick={handleUpdatePoints} disabled={updatingPoints} className="gap-2">
-                {updatingPoints ? 'Updating…' : 'Update Driver Points'}
-              </RacingButton>
+              <div className="flex gap-3">
+                <RacingButton onClick={handleSyncOfficial} disabled={syncingOfficial} className="gap-2">
+                  {syncingOfficial ? 'Syncing…' : 'Sync 2025 Official Results'}
+                </RacingButton>
+                <RacingButton onClick={handleUpdatePoints} disabled={updatingPoints} variant="outline" className="gap-2">
+                  {updatingPoints ? 'Updating…' : 'Update Driver Points'}
+                </RacingButton>
+              </div>
             </CardContent>
           </Card>
 

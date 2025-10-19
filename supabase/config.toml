@@ -1,1 +1,4 @@
 project_id = "klpuiqqyfemqzljqttnq"
+
+[functions.fetch-official-results-2025]
+verify_jwt = false
