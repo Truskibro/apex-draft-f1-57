@@ -28,6 +28,13 @@ export const useStandings = () => {
   }, [user]);
 
   const fetchStandings = async () => {
+    // Ensure we never show an endless spinner
+    setLoading(true);
+    const safetyTimeout = setTimeout(() => {
+      console.warn('⏳ Standings fetch timed out — showing empty state.');
+      setLoading(false);
+    }, 6000);
+
     try {
       console.log('🔍 Fetching standings...');
       
@@ -79,12 +86,14 @@ export const useStandings = () => {
       setStandings([]);
     } catch (error) {
       console.log('❌ Catch error:', error);
+      setStandings([]);
       toast({
         title: 'Error',
         description: 'Failed to load standings',
         variant: 'destructive',
       });
     } finally {
+      clearTimeout(safetyTimeout);
       setLoading(false);
     }
   };
