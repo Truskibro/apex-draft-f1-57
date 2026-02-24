@@ -346,34 +346,16 @@ export type Database = {
         Args: { prediction_id: string; race_id: string }
         Returns: number
       }
-      recalculate_all_prediction_points: {
-        Args: Record<PropertyKey, never>
-        Returns: undefined
-      }
-      trigger_driver_points_update: {
-        Args: Record<PropertyKey, never>
-        Returns: undefined
-      }
-      trigger_race_updates: {
-        Args: Record<PropertyKey, never>
-        Returns: undefined
-      }
-      update_driver_championship_points: {
-        Args: Record<PropertyKey, never>
-        Returns: undefined
-      }
+      recalculate_all_prediction_points: { Args: never; Returns: undefined }
+      trigger_driver_points_update: { Args: never; Returns: undefined }
+      trigger_race_updates: { Args: never; Returns: undefined }
+      update_driver_championship_points: { Args: never; Returns: undefined }
       update_user_standings: {
         Args: { user_id_param: string }
         Returns: undefined
       }
-      user_can_view_league: {
-        Args: { league_id: string }
-        Returns: boolean
-      }
-      user_is_league_owner: {
-        Args: { league_id: string }
-        Returns: boolean
-      }
+      user_can_view_league: { Args: { league_id: string }; Returns: boolean }
+      user_is_league_owner: { Args: { league_id: string }; Returns: boolean }
       user_is_member_of_league: {
         Args: { _league_id: string }
         Returns: boolean
