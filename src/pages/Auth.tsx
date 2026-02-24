@@ -176,7 +176,7 @@ const Auth = () => {
             </CardDescription>
           </CardHeader>
           <CardContent>
-            <Form {...currentForm}>
+            <Form {...currentForm} key={isLogin ? 'login' : 'signup'}>
               <form onSubmit={currentForm.handleSubmit(onSubmit)} className="space-y-4">
                 {!isLogin && (
                   <>
