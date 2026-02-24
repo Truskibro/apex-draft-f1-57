@@ -132,7 +132,10 @@ const Leaderboard = () => {
     );
   }
 
-  if (standings.length === 0) {
+  // Filter out users with 0 points - they haven't actively participated yet
+  const activeStandings = standings.filter(s => s.total_points > 0);
+
+  if (activeStandings.length === 0) {
     return (
       <section className="py-16 bg-muted/20">
         <div className="container px-4">
@@ -151,6 +154,7 @@ const Leaderboard = () => {
   }
 
   const showLeagues = userHasLeague && leagueStandings.length > 0;
+  const displayStandings = activeStandings;
 
   return (
     <section className="py-16 bg-muted/20">
@@ -174,10 +178,10 @@ const Leaderboard = () => {
               </div>
 
               {/* Top 3 Podium */}
-              {standings.length >= 3 && (
+              {displayStandings.length >= 3 && (
                 <div className="mb-6 md:mb-8">
                   <div className="grid grid-cols-3 gap-1 md:gap-2">
-                    {standings.slice(0, 3).map((player, index) => {
+                    {displayStandings.slice(0, 3).map((player, index) => {
                       const positions = ['order-2', 'order-1', 'order-3'];
                       const heights = ['h-16 md:h-24', 'h-20 md:h-32', 'h-14 md:h-20'];
                       return (
@@ -205,7 +209,7 @@ const Leaderboard = () => {
               {/* Full Individual Rankings */}
               <Card className="border-2 max-h-[500px] overflow-y-auto">
                 <div className="divide-y divide-border">
-                  {standings.map(player => (
+                  {displayStandings.map(player => (
                     <div key={player.id} className={`p-3 flex items-center justify-between hover:bg-muted/50 racing-transition ${player.isCurrentUser ? 'bg-primary/10 border-l-4 border-l-primary' : ''}`}>
                       <div className="flex items-center gap-2">
                         <div className="flex items-center gap-1 w-8">
