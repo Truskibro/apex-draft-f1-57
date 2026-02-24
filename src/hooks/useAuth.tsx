@@ -37,20 +37,11 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
 
     // Set up auth state listener for changes
     const { data: { subscription } } = supabase.auth.onAuthStateChange(
-      async (event, session) => {
+      (event, session) => {
         console.log('🔐 Auth state change:', event, session?.user?.id);
         setSession(session);
         setUser(session?.user ?? null);
         setLoading(false);
-        
-        // Force a fresh session check on sign in to ensure cross-tab sync
-        if (event === 'SIGNED_IN' || event === 'TOKEN_REFRESHED') {
-          const { data: { session: freshSession } } = await supabase.auth.getSession();
-          if (freshSession) {
-            setSession(freshSession);
-            setUser(freshSession.user);
-          }
-        }
       }
     );
 
