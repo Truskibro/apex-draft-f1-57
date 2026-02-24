@@ -2,3 +2,6 @@ project_id = "klpuiqqyfemqzljqttnq"
 
 [functions.fetch-official-results-2025]
 verify_jwt = false
+
+[functions.sync-2025-final-data]
+verify_jwt = false
