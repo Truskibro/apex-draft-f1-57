@@ -23,9 +23,15 @@ export const useStandings = () => {
   const { toast } = useToast();
   const { user } = useAuth();
 
+  const userIdRef = useState<string | null>(null);
+
   useEffect(() => {
+    const currentUserId = user?.id ?? null;
+    // Only refetch when the user ID actually changes, not on every user object reference change
+    if (currentUserId === userIdRef[0]) return;
+    userIdRef[1](currentUserId);
     fetchStandings();
-  }, [user]);
+  }, [user?.id]);
 
   const fetchStandings = async () => {
     // Ensure we never show an endless spinner
