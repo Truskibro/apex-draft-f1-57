@@ -2,12 +2,11 @@ import React, { useState } from 'react';
 import { Card } from '@/components/ui/card';
 import { RacingButton } from '@/components/ui/racing-button';
 import { Badge } from '@/components/ui/badge';
-import { Crown, Trophy, TrendingUp, Zap, Target, Loader2, GripVertical, Save, Check, X, Lock } from 'lucide-react';
+import { Crown, Trophy, TrendingUp, Zap, Target, Loader2, GripVertical, Save, Check, X } from 'lucide-react';
 import { useDrivers } from '@/hooks/useDrivers';
 import { useToast } from '@/hooks/use-toast';
 import { useAuth } from '@/hooks/useAuth';
 import { supabase } from '@/integrations/supabase/client';
-import { useRaceTimer } from '@/hooks/useRaceTimer';
 
 // F1 Championship scoring system
 const championshipPoints = [25, 18, 15, 12, 10, 8, 6, 4, 2, 1];
@@ -16,55 +15,62 @@ const RacePrediction = () => {
   const { drivers, loading } = useDrivers();
   const { toast } = useToast();
   const { user } = useAuth();
-  const { timingInfo } = useRaceTimer();
   const [predictions, setPredictions] = useState<string[]>([]);
   const [fastestLapPrediction, setFastestLapPrediction] = useState<string>('');
   const [dnfPrediction, setDnfPrediction] = useState<string>('');
   const [availableDrivers, setAvailableDrivers] = useState<string[]>([]);
   const [draggedIndex, setDraggedIndex] = useState<number | null>(null);
   const [isSaved, setIsSaved] = useState(true);
-  const [hasUpcomingRaces, setHasUpcomingRaces] = useState(true);
+  const [targetRaceName, setTargetRaceName] = useState<string>('');
 
   // Update available drivers when drivers data loads or user changes
   React.useEffect(() => {
-    console.log('🔄 Effect running, drivers.length:', drivers.length, 'user:', user?.id);
     if (drivers.length > 0) {
       if (user) {
-        console.log('👤 User logged in, loading from database');
         loadPredictionsFromDatabase();
       } else {
-        console.log('👤 No user, loading from localStorage');
         loadPredictionsFromLocalStorage();
       }
     }
-  }, [drivers, user?.id]); // Changed dependency to user?.id for better reactivity
+  }, [drivers, user?.id]);
+
+  const getNextRaceQuery = async () => {
+    // First try upcoming races
+    const { data: upcoming } = await supabase
+      .from('races')
+      .select('id, name, status')
+      .eq('status', 'upcoming')
+      .order('race_date', { ascending: true })
+      .limit(1);
+
+    if (upcoming && upcoming.length > 0) return upcoming[0];
+
+    // If no upcoming races, get the most recent completed race
+    const { data: completed } = await supabase
+      .from('races')
+      .select('id, name, status')
+      .eq('status', 'completed')
+      .order('race_date', { ascending: false })
+      .limit(1);
+
+    return completed && completed.length > 0 ? completed[0] : null;
+  };
 
   const loadPredictionsFromDatabase = async () => {
     if (!user) return;
     
     try {
-      // Get the next upcoming race
-      const { data: upcomingRaces } = await supabase
-        .from('races')
-        .select('id, name, status')
-        .eq('status', 'upcoming')
-        .order('race_date', { ascending: true })
-        .limit(1);
+      const race = await getNextRaceQuery();
 
-      if (!upcomingRaces || upcomingRaces.length === 0) {
-        console.log('🚫 No upcoming races found');
-        // Clear any saved predictions since there are no upcoming races
+      if (!race) {
         setPredictions([]);
         setAvailableDrivers(drivers.map(d => d.id));
         clearLocalStorage();
-        setHasUpcomingRaces(false);
         return;
       }
 
-      setHasUpcomingRaces(true);
-
-      const raceId = upcomingRaces[0].id;
-      console.log('🏁 Loading predictions for upcoming race:', upcomingRaces[0].name);
+      setTargetRaceName(race.name);
+      const raceId = race.id;
 
       // Load existing predictions for this race
       const { data: existingPrediction } = await supabase
@@ -75,25 +81,18 @@ const RacePrediction = () => {
         .maybeSingle();
 
       if (existingPrediction && existingPrediction.predicted_podium) {
-        console.log('📊 Found existing predictions:', existingPrediction);
         const validPredictions = existingPrediction.predicted_podium.filter((id: string) => 
           drivers.some(driver => driver.id === id)
         );
         setPredictions(validPredictions);
         
-        // Load fastest lap prediction
         if (existingPrediction.predicted_fastest_lap) {
           setFastestLapPrediction(existingPrediction.predicted_fastest_lap);
-          console.log('✅ Loaded fastest lap:', getDriverById(existingPrediction.predicted_fastest_lap)?.name);
         }
-        
-        // Load DNF prediction
         if (existingPrediction.predicted_dnf) {
           setDnfPrediction(existingPrediction.predicted_dnf);
-          console.log('✅ Loaded DNF:', getDriverById(existingPrediction.predicted_dnf)?.name);
         }
         
-        // Set available drivers (excluding those already used)
         const usedDrivers = [
           ...validPredictions,
           existingPrediction.predicted_fastest_lap,
@@ -105,10 +104,7 @@ const RacePrediction = () => {
           .filter(id => !usedDrivers.includes(id));
         setAvailableDrivers(remainingDrivers);
         setIsSaved(true);
-        
-        console.log('✅ Loaded ALL predictions: positions=' + validPredictions.length + ', fastest_lap=' + (existingPrediction.predicted_fastest_lap ? 'Yes' : 'No') + ', dnf=' + (existingPrediction.predicted_dnf ? 'Yes' : 'No'));
       } else {
-        console.log('🆕 No existing predictions, starting fresh');
         setPredictions([]);
         setFastestLapPrediction('');
         setDnfPrediction('');
@@ -117,46 +113,33 @@ const RacePrediction = () => {
       }
     } catch (error) {
       console.error('Error loading predictions from database:', error);
-      // Fallback to localStorage
       loadPredictionsFromLocalStorage();
     }
   };
 
   const loadPredictionsFromLocalStorage = () => {
-    // Load saved predictions from localStorage
     const savedPredictions = localStorage.getItem('f1-predictions');
     const savedFastestLap = localStorage.getItem('f1-fastest-lap');
     const savedDnf = localStorage.getItem('f1-dnf');
     
-    console.log('💾 localStorage data:', { savedPredictions, savedFastestLap, savedDnf });
-    
     if (savedPredictions) {
       const parsedPredictions = JSON.parse(savedPredictions);
-      console.log('📋 Parsed predictions:', parsedPredictions);
-      // Validate that all saved driver IDs still exist
       const validPredictions = parsedPredictions.filter((id: string) => 
         drivers.some(driver => driver.id === id)
       );
-      console.log('✅ Valid predictions:', validPredictions);
       setPredictions(validPredictions);
-      
-      // Set available drivers (excluding those in predictions)
       const remainingDrivers = drivers
         .map(d => d.id)
         .filter(id => !validPredictions.includes(id));
       setAvailableDrivers(remainingDrivers);
     } else {
-      console.log('❌ No saved predictions found');
       setAvailableDrivers(drivers.map(d => d.id));
     }
     
     if (savedFastestLap && drivers.some(driver => driver.id === savedFastestLap)) {
-      console.log('⚡ Setting fastest lap:', savedFastestLap);
       setFastestLapPrediction(savedFastestLap);
     }
-    
     if (savedDnf && drivers.some(driver => driver.id === savedDnf)) {
-      console.log('❌ Setting DNF:', savedDnf);
       setDnfPrediction(savedDnf);
     }
   };
@@ -172,7 +155,6 @@ const RacePrediction = () => {
   // Save to localStorage whenever predictions change
   React.useEffect(() => {
     if (!user && drivers.length > 0) {
-      // Only save to localStorage if not logged in and we have valid data
       localStorage.setItem('f1-predictions', JSON.stringify(predictions));
       if (fastestLapPrediction) {
         localStorage.setItem('f1-fastest-lap', fastestLapPrediction);
@@ -187,17 +169,7 @@ const RacePrediction = () => {
     }
   }, [predictions, fastestLapPrediction, dnfPrediction, user, drivers.length]);
 
-
   const addToPrediction = (driverId: string) => {
-    if (timingInfo.isPredictionLocked) {
-      toast({
-        title: "Predictions Locked",
-        description: "Predictions are locked 1 hour before race start",
-        variant: "destructive"
-      });
-      return;
-    }
-    
     if (predictions.length < 10 && availableDrivers.includes(driverId)) {
       setPredictions([...predictions, driverId]);
       setAvailableDrivers(availableDrivers.filter(id => id !== driverId));
@@ -206,36 +178,20 @@ const RacePrediction = () => {
   };
 
   const removeFromPrediction = (index: number) => {
-    if (timingInfo.isPredictionLocked) {
-      toast({
-        title: "Predictions Locked",
-        description: "Predictions are locked 1 hour before race start",
-        variant: "destructive"
-      });
-      return;
-    }
-    
     const driverId = predictions[index];
     setPredictions(predictions.filter((_, i) => i !== index));
     setAvailableDrivers([...availableDrivers, driverId]);
     setIsSaved(false);
     
-    // Clear fastest lap prediction if it was the removed driver
     if (fastestLapPrediction === driverId) {
       setFastestLapPrediction('');
     }
-    
-    // Clear DNF prediction if it was the removed driver
     if (dnfPrediction === driverId) {
       setDnfPrediction('');
     }
   };
 
   const movePrediction = (fromIndex: number, toIndex: number) => {
-    if (timingInfo.isPredictionLocked) {
-      return;
-    }
-    
     const newPredictions = [...predictions];
     const [movedDriver] = newPredictions.splice(fromIndex, 1);
     newPredictions.splice(toIndex, 0, movedDriver);
@@ -253,42 +209,20 @@ const RacePrediction = () => {
       return;
     }
 
-    if (timingInfo.isPredictionLocked) {
-      toast({
-        title: "Predictions Locked",
-        description: "Predictions are locked 1 hour before race start",
-        variant: "destructive"
-      });
-      return;
-    }
-
-    console.log('💾 Saving predictions:', predictions);
-    
     try {
-      // Get the current race (for now, just use the first race as a placeholder)
-      const { data: races } = await supabase
-        .from('races')
-        .select('id')
-        .eq('status', 'upcoming')
-        .order('race_date', { ascending: true })
-        .limit(1);
+      const race = await getNextRaceQuery();
 
-      if (!races || races.length === 0) {
+      if (!race) {
         toast({
-          title: "No upcoming races",
-          description: "There are no upcoming races to make predictions for",
+          title: "No races found",
+          description: "There are no races to make predictions for",
           variant: "destructive"
         });
         return;
       }
 
-      const raceId = races[0].id;
-      const predictedPodium = predictions.slice(0, 10); // Save top 10 position predictions
-      
-      console.log('📊 Saving ALL predictions:');
-      console.log('- Top 10 positions:', predictedPodium.map((id, index) => `P${index + 1}: ${getDriverById(id)?.name}`));
-      console.log('- Fastest lap:', fastestLapPrediction ? getDriverById(fastestLapPrediction)?.name : 'None');
-      console.log('- DNF:', dnfPrediction ? getDriverById(dnfPrediction)?.name : 'None');
+      const raceId = race.id;
+      const predictedPodium = predictions.slice(0, 10);
 
       // Save or update prediction in database
       const { data: existingPrediction } = await supabase
@@ -299,7 +233,6 @@ const RacePrediction = () => {
         .maybeSingle();
 
       if (existingPrediction) {
-        // Update existing prediction
         const { error } = await supabase
           .from('user_predictions')
           .update({
@@ -309,10 +242,8 @@ const RacePrediction = () => {
             updated_at: new Date().toISOString()
           })
           .eq('id', existingPrediction.id);
-
         if (error) throw error;
       } else {
-        // Create new prediction
         const { error } = await supabase
           .from('user_predictions')
           .insert({
@@ -321,13 +252,11 @@ const RacePrediction = () => {
             predicted_podium: predictedPodium,
             predicted_fastest_lap: fastestLapPrediction || null,
             predicted_dnf: dnfPrediction || null,
-            points_earned: 0 // Will be calculated when race completes
+            points_earned: 0
           });
-
         if (error) throw error;
       }
 
-      // Also save to localStorage as backup
       localStorage.setItem('f1-predictions', JSON.stringify(predictions));
       if (fastestLapPrediction) {
         localStorage.setItem('f1-fastest-lap', fastestLapPrediction);
@@ -382,18 +311,12 @@ const RacePrediction = () => {
       }
       return total;
     }, 0);
-    
-    // Add fastest lap bonus
     const fastestLapBonus = fastestLapPrediction ? 10 : 0;
-    
-    // Add DNF bonus
     const dnfBonus = dnfPrediction ? 10 : 0;
-    
     return finishingPoints + fastestLapBonus + dnfBonus;
   };
 
   const getTrendIcon = (points: number) => {
-    // Simple trend based on championship points ranges
     if (points > 200) return <TrendingUp className="h-3 w-3 text-accent" />;
     if (points > 100) return <TrendingUp className="h-3 w-3 text-yellow-500" />;
     if (points > 50) return <Zap className="h-3 w-3 text-muted-foreground" />;
@@ -421,32 +344,15 @@ const RacePrediction = () => {
         <div className="max-w-6xl mx-auto">
           <div className="text-center mb-8 md:mb-12">
             <h2 className="text-2xl md:text-3xl lg:text-4xl font-bold mb-3 md:mb-4">Predict Finishing Order</h2>
-            {hasUpcomingRaces ? (
-              <p className="text-base md:text-lg lg:text-xl text-muted-foreground mb-4 md:mb-6">
-                Predict the top 10 finishing positions for the next upcoming race
-              </p>
-            ) : (
-              <p className="text-base md:text-lg lg:text-xl text-muted-foreground mb-4 md:mb-6">
-                No upcoming races found. All predictions have been cleared after race completion.
-              </p>
-            )}
-            
-            {/* Prediction Lock Warning */}
-            {timingInfo.isPredictionLocked && (
-              <div className="mb-6 p-4 bg-destructive/10 border border-destructive/20 rounded-lg max-w-2xl mx-auto">
-                <div className="flex items-center justify-center gap-2">
-                  <Lock className="h-5 w-5 text-destructive" />
-                  <p className="text-destructive font-medium">
-                    Predictions are locked! Race starts in less than 1 hour.
-                  </p>
-                </div>
-              </div>
-            )}
+            <p className="text-base md:text-lg lg:text-xl text-muted-foreground mb-4 md:mb-6">
+              {targetRaceName 
+                ? `Predict the top 10 finishing positions for the ${targetRaceName}`
+                : 'Predict the top 10 finishing positions for the next race'
+              }
+            </p>
 
             {/* Points Display */}
-            <Card className={`inline-flex items-center gap-3 md:gap-4 p-3 md:p-4 bg-card border-2 ${
-              timingInfo.isPredictionLocked ? 'opacity-50' : ''
-            }`}>
+            <Card className="inline-flex items-center gap-3 md:gap-4 p-3 md:p-4 bg-card border-2">
               <div className="text-center">
                 <div className="text-xs md:text-sm text-muted-foreground">Potential Points</div>
                 <div className="text-xl md:text-2xl font-bold text-accent">
@@ -460,15 +366,6 @@ const RacePrediction = () => {
                   {predictions.length}/10
                 </div>
               </div>
-              {timingInfo.isPredictionLocked && (
-                <>
-                  <div className="h-6 md:h-8 w-px bg-border" />
-                  <div className="text-center">
-                    <Lock className="h-4 w-4 text-destructive mx-auto" />
-                    <div className="text-xs text-destructive">Locked</div>
-                  </div>
-                </>
-              )}
             </Card>
           </div>
 
@@ -495,17 +392,13 @@ const RacePrediction = () => {
                     return (
                       <Card 
                         key={`${driverId}-${index}`}
-                        className={`p-3 border-2 border-primary/20 bg-primary/5 racing-transition group ${
-                          timingInfo.isPredictionLocked 
-                            ? 'opacity-50 cursor-not-allowed' 
-                            : 'hover:bg-primary/10 cursor-grab active:cursor-grabbing'
-                        } ${
+                        className={`p-3 border-2 border-primary/20 bg-primary/5 racing-transition group hover:bg-primary/10 cursor-grab active:cursor-grabbing ${
                           draggedIndex === index ? 'opacity-50 scale-105' : ''
                         }`}
-                        draggable={!timingInfo.isPredictionLocked}
-                        onDragStart={(e) => !timingInfo.isPredictionLocked && handleDragStart(e, index)}
-                        onDragOver={!timingInfo.isPredictionLocked ? handleDragOver : undefined}
-                        onDrop={(e) => !timingInfo.isPredictionLocked && handleDrop(e, index)}
+                        draggable
+                        onDragStart={(e) => handleDragStart(e, index)}
+                        onDragOver={handleDragOver}
+                        onDrop={(e) => handleDrop(e, index)}
                       >
                         <div className="flex items-center justify-between">
                           <div className="flex items-center gap-3">
@@ -531,7 +424,7 @@ const RacePrediction = () => {
                           
                           <div className="flex items-center gap-2">
                             {/* Fastest lap button */}
-                            {fastestLapPrediction !== driverId && !timingInfo.isPredictionLocked && (
+                            {fastestLapPrediction !== driverId && (
                               <button
                                 onClick={(e) => {
                                   e.stopPropagation();
@@ -546,7 +439,7 @@ const RacePrediction = () => {
                             )}
 
                             {/* DNF button */}
-                            {dnfPrediction !== driverId && !timingInfo.isPredictionLocked && (
+                            {dnfPrediction !== driverId && (
                               <button
                                 onClick={(e) => {
                                   e.stopPropagation();
@@ -564,15 +457,13 @@ const RacePrediction = () => {
                               +{championshipPoints[index] || 0} pts
                             </Badge>
                             
-                            {!timingInfo.isPredictionLocked && (
-                              <button
-                                onClick={() => removeFromPrediction(index)}
-                                className="text-destructive hover:text-destructive/80 text-sm"
-                                title="Remove from predictions"
-                              >
-                                ✕
-                              </button>
-                            )}
+                            <button
+                              onClick={() => removeFromPrediction(index)}
+                              className="text-destructive hover:text-destructive/80 text-sm"
+                              title="Remove from predictions"
+                            >
+                              ✕
+                            </button>
                           </div>
                         </div>
                       </Card>
@@ -603,17 +494,10 @@ const RacePrediction = () => {
                       </div>
                       <button
                         onClick={() => {
-                          if (!timingInfo.isPredictionLocked) {
-                            setFastestLapPrediction('');
-                            setIsSaved(false);
-                          }
+                          setFastestLapPrediction('');
+                          setIsSaved(false);
                         }}
-                        disabled={timingInfo.isPredictionLocked}
-                        className={`text-sm ${
-                          timingInfo.isPredictionLocked 
-                            ? 'text-muted-foreground cursor-not-allowed' 
-                            : 'text-destructive hover:text-destructive/80'
-                        }`}
+                        className="text-sm text-destructive hover:text-destructive/80"
                       >
                         ✕
                       </button>
@@ -649,17 +533,10 @@ const RacePrediction = () => {
                       </div>
                       <button
                         onClick={() => {
-                          if (!timingInfo.isPredictionLocked) {
-                            setDnfPrediction('');
-                            setIsSaved(false);
-                          }
+                          setDnfPrediction('');
+                          setIsSaved(false);
                         }}
-                        disabled={timingInfo.isPredictionLocked}
-                        className={`text-sm ${
-                          timingInfo.isPredictionLocked 
-                            ? 'text-muted-foreground cursor-not-allowed' 
-                            : 'text-destructive hover:text-destructive/80'
-                        }`}
+                        className="text-sm text-destructive hover:text-destructive/80"
                       >
                         ✕
                       </button>
@@ -693,12 +570,8 @@ const RacePrediction = () => {
                   return (
                      <Card 
                        key={driver.id}
-                       className={`p-3 racing-transition border-2 border-border group ${
-                         timingInfo.isPredictionLocked 
-                           ? 'opacity-50 cursor-not-allowed' 
-                           : 'cursor-pointer hover:border-accent/50 hover:bg-accent/5'
-                       }`}
-                       onClick={() => !timingInfo.isPredictionLocked && addToPrediction(driver.id)}
+                       className="p-3 racing-transition border-2 border-border group cursor-pointer hover:border-accent/50 hover:bg-accent/5"
+                       onClick={() => addToPrediction(driver.id)}
                      >
                        <div className="flex items-center justify-between">
                          <div className="flex items-center gap-3">
@@ -720,7 +593,7 @@ const RacePrediction = () => {
                               <div className="text-sm font-medium text-accent">{driver.championship_points} pts</div>
                             </div>
                             
-                             {!fastestLapPrediction && !timingInfo.isPredictionLocked && (
+                             {!fastestLapPrediction && (
                                <button
                                  onClick={(e) => {
                                    e.stopPropagation();
@@ -734,7 +607,7 @@ const RacePrediction = () => {
                                </button>
                              )}
                             
-                             {!dnfPrediction && !timingInfo.isPredictionLocked && (
+                             {!dnfPrediction && (
                                <button
                                  onClick={(e) => {
                                    e.stopPropagation();
@@ -768,18 +641,13 @@ const RacePrediction = () => {
                 </Card>
 
                 <RacingButton 
-                  variant={timingInfo.isPredictionLocked ? "outline" : "racing"}
+                  variant="racing"
                   size="lg" 
                   className="w-full"
-                  disabled={predictions.length === 0 || timingInfo.isPredictionLocked}
+                  disabled={predictions.length === 0}
                   onClick={handleSavePredictions}
                 >
-                  {timingInfo.isPredictionLocked ? (
-                    <>
-                      <Lock className="h-4 w-4 mr-2" />
-                      Predictions Locked
-                    </>
-                  ) : isSaved ? (
+                  {isSaved ? (
                     <>
                       <Check className="h-4 w-4 mr-2" />
                       Predictions Saved
