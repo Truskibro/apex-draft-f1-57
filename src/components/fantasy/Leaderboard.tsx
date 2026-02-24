@@ -28,32 +28,18 @@ const Leaderboard = () => {
   const fetchLeagueStandings = async () => {
     setLeaguesLoading(true);
     try {
-      if (!user) {
-        setUserHasLeague(false);
-        setLeagueStandings([]);
-        return;
-      }
-
-      // Check if user is in any leagues
-      const { data: userLeagues } = await supabase
-        .from('league_members')
-        .select('league_id')
-        .eq('user_id', user.id);
-
-      if (!userLeagues || userLeagues.length === 0) {
-        setUserHasLeague(false);
-        setLeagueStandings([]);
-        return;
-      }
-
-      setUserHasLeague(true);
-      const leagueIds = userLeagues.map(l => l.league_id);
-
-      // Get league details
+      // Fetch all public leagues regardless of user membership
       const { data: leagues } = await supabase
         .from('leagues')
         .select('id, name')
-        .in('id', leagueIds);
+        .eq('visibility', 'public');
+
+      if (!leagues || leagues.length === 0) {
+        setLeagueStandings([]);
+        return;
+      }
+
+      const leagueIds = leagues.map(l => l.id);
 
       // Get all members for those leagues
       const { data: allMembers } = await supabase
@@ -153,7 +139,7 @@ const Leaderboard = () => {
     );
   }
 
-  const showLeagues = userHasLeague && leagueStandings.length > 0;
+  const showLeagues = leagueStandings.length > 0;
   const displayStandings = activeStandings;
 
   return (
